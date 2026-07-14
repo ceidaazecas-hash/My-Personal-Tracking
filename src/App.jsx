@@ -494,7 +494,7 @@ export default function App() {
     };
 
     return (
-      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>
         <header className="app-header" style={{ position: 'sticky', top: 0, zIndex: 100 }}>
           <div className="app-logo-area">
             {logo ? (
@@ -518,9 +518,22 @@ export default function App() {
           </div>
         </header>
 
-        <main className="app-content" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+        <main className="app-content" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', boxSizing: 'border-box' }}>
           {sharedEventError ? (
-            <div className="card" style={{ maxWidth: '420px', width: '100%', padding: '32px 24px', textAlign: 'center', animation: 'fadeIn 0.3s ease-out' }}>
+            <div 
+              style={{ 
+                maxWidth: '420px', 
+                width: '100%', 
+                padding: '32px 24px', 
+                textAlign: 'center', 
+                animation: 'fadeIn 0.3s ease-out',
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-lg)',
+                boxSizing: 'border-box'
+              }}
+            >
               <ShieldAlert size={48} style={{ color: '#ef4444', marginBottom: '16px', margin: '0 auto' }} />
               <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-primary)' }}>Shared Event Error</h2>
               <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px', lineHeight: 1.5 }}>{sharedEventError}</p>
@@ -532,52 +545,64 @@ export default function App() {
               </a>
             </div>
           ) : sharedEvent ? (
-            <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '28px 24px', animation: 'fadeIn 0.3s ease-out' }}>
-              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <div 
+              style={{ 
+                maxWidth: '480px', 
+                width: '100%', 
+                padding: '32px 24px', 
+                animation: 'fadeIn 0.3s ease-out',
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-lg)',
+                boxSizing: 'border-box'
+              }}
+            >
+              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
                 <span style={{
-                  display: 'inline-block', padding: '4px 12px', borderRadius: '20px',
-                  backgroundColor: 'var(--accent-glow)', color: 'var(--accent)', fontSize: '12px', fontWeight: '700',
-                  textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px'
+                  display: 'inline-block', padding: '6px 14px', borderRadius: '20px',
+                  backgroundColor: 'var(--accent-glow)', color: 'var(--accent)', fontSize: '11px', fontWeight: '800',
+                  textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '12px'
                 }}>
                   Public Invitation
                 </span>
-                <h1 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', lineHeight: 1.3 }}>
+                <h1 style={{ fontSize: '26px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', lineHeight: 1.3, letterSpacing: '-0.5px' }}>
                   {sharedEvent.name}
                 </h1>
               </div>
 
-              <div className="event-detail-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="event-detail-grid" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 {/* Category Type */}
-                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
                     <Tag size={20} />
                   </span>
                   <div className="detail-content">
-                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Event Type</span>
+                    <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Event Type</span>
                     <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>{sharedEvent.type}</span>
                   </div>
                 </div>
 
                 {/* Organization */}
                 {sharedEvent.organization && (
-                  <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
                       <Users size={20} />
                     </span>
                     <div className="detail-content">
-                      <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Organization</span>
+                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Organization</span>
                       <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>{sharedEvent.organization}</span>
                     </div>
                   </div>
                 )}
 
                 {/* Date range display */}
-                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
                     <Calendar size={20} />
                   </span>
                   <div className="detail-content">
-                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Date</span>
+                    <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Date</span>
                     <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>
                       {sharedEvent.end_date && new Date(sharedEvent.date).toDateString() !== new Date(sharedEvent.end_date).toDateString() ? (
                         `${formatDate(sharedEvent.date)} to ${formatDate(sharedEvent.end_date)}`
@@ -589,12 +614,12 @@ export default function App() {
                 </div>
 
                 {/* Time range display */}
-                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
                     <Clock size={20} />
                   </span>
                   <div className="detail-content">
-                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Time</span>
+                    <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Time</span>
                     <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>
                       {sharedEvent.end_date ? (
                         `${formatTime(sharedEvent.date)} - ${formatTime(sharedEvent.end_date)}`
@@ -607,13 +632,26 @@ export default function App() {
 
                 {/* Location */}
                 {sharedEvent.location && (
-                  <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)', marginTop: '2px' }}>
                       <MapPin size={20} />
                     </span>
-                    <div className="detail-content" style={{ flex: 1 }}>
-                      <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Location / Address</span>
-                      <span className="detail-val" style={{ display: 'block', color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px', marginBottom: '8px' }}>{sharedEvent.location}</span>
+                    <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
+                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Location / Address</span>
+                      <span 
+                        className="detail-val" 
+                        style={{ 
+                          display: 'block', 
+                          color: 'var(--text-primary)', 
+                          fontWeight: '700', 
+                          fontSize: '15px', 
+                          marginBottom: '10px',
+                          wordBreak: 'break-word',
+                          whiteSpace: 'pre-wrap'
+                        }}
+                      >
+                        {sharedEvent.location}
+                      </span>
                       
                       <a 
                         href={getMapsUrl(sharedEvent.location)} 
@@ -622,9 +660,12 @@ export default function App() {
                         className="maps-link-btn"
                         style={{
                           display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none',
-                          backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '8px',
-                          padding: '8px 16px', fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700',
-                          transition: '0.2s'
+                          backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '10px',
+                          padding: '10px 18px', fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700',
+                          transition: '0.2s',
+                          width: '100%',
+                          justifyContent: 'center',
+                          boxSizing: 'border-box'
                         }}
                       >
                         <MapPin size={16} style={{ color: 'var(--accent)' }} />
@@ -635,13 +676,13 @@ export default function App() {
                 )}
 
                 {/* Cost */}
-                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
                     <DollarSign size={20} />
                   </span>
                   <div className="detail-content">
-                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Cost</span>
-                    <span className="detail-val" style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '8px', backgroundColor: sharedEvent.is_paid ? 'rgba(239, 68, 68, 0.1)' : 'var(--accent-glow)', color: sharedEvent.is_paid ? '#ef4444' : 'var(--accent)', fontWeight: '700', fontSize: '14px' }}>
+                    <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Cost</span>
+                    <span className="detail-val" style={{ display: 'inline-block', padding: '6px 12px', borderRadius: '8px', backgroundColor: sharedEvent.is_paid ? 'rgba(239, 68, 68, 0.1)' : 'var(--accent-glow)', color: sharedEvent.is_paid ? '#ef4444' : 'var(--accent)', fontWeight: '700', fontSize: '14px' }}>
                       {formatPrice(sharedEvent.price)}
                     </span>
                   </div>
@@ -649,8 +690,8 @@ export default function App() {
               </div>
 
               {/* Invitation footer */}
-              <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+              <div style={{ marginTop: '36px', paddingTop: '24px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, fontWeight: '500' }}>
                   Personal Event tracker powered by <strong>My Event</strong>
                 </p>
               </div>
