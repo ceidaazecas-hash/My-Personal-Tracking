@@ -434,6 +434,11 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   return (
     <div 
       className="modal-overlay"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
     >

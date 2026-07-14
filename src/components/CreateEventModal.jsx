@@ -445,6 +445,11 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     <>
       <div 
         className="modal-overlay"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            handleCloseRequest();
+          }
+        }}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
