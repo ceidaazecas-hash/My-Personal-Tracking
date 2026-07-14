@@ -1,0 +1,27 @@
+{
+  "short_name": "My Event",
+  "name": "My Event Tracker",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.jpg",
+      "sizes": "640x640",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "background_color": "#000000",
+  "theme_color": "#10b981",
+  "display": "standalone",
+  "orientation": "portrait"
+}
