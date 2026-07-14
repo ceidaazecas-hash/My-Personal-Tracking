@@ -24,8 +24,10 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
   
   const todayTasks = tasks
     .filter(task => {
-      const taskDate = new Date(task.date);
-      return taskDate >= todayStart && taskDate < todayEnd && !task.is_completed;
+      const startD = new Date(task.date);
+      const endD = task.end_date ? new Date(task.end_date) : null;
+      const spansToday = startD < todayEnd && (endD ? endD >= todayStart : startD >= todayStart);
+      return spansToday && !task.is_completed;
     })
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -35,8 +37,10 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
 
   const pastUncompletedTasks = tasks
     .filter(task => {
-      const taskDate = new Date(task.date);
-      return taskDate < todayStart && !task.is_completed;
+      const startD = new Date(task.date);
+      const endD = task.end_date ? new Date(task.end_date) : null;
+      const isPast = endD ? endD < todayStart : startD < todayStart;
+      return isPast && !task.is_completed;
     })
     .sort((a, b) => new Date(b.date) - new Date(a.date)); // Show most recent first
 
@@ -60,6 +64,32 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  const renderTaskDateRange = (taskItem) => {
+    const startD = new Date(taskItem.date);
+    const hasEnd = !!taskItem.end_date;
+    const endD = hasEnd ? new Date(taskItem.end_date) : null;
+
+    const startFormattedTime = formatTime(taskItem.date);
+    const startFormattedDate = formatDate(taskItem.date);
+
+    if (!hasEnd) {
+      return `${startFormattedTime}`;
+    }
+
+    const startDayStr = startD.toDateString();
+    const endDayStr = endD.toDateString();
+    const isSameDay = startDayStr === endDayStr;
+
+    const endFormattedTime = formatTime(taskItem.end_date);
+
+    if (isSameDay) {
+      return `${startFormattedTime} - ${endFormattedTime}`;
+    }
+
+    const endFormattedDate = formatDate(taskItem.end_date);
+    return `${startFormattedDate} ${startFormattedTime} to ${endFormattedDate} ${endFormattedTime}`;
   };
 
   return (
@@ -281,7 +311,7 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                     )}
                     <div className="meta-item" style={{ fontSize: '11px', marginTop: '4px', color: 'var(--accent)', fontWeight: '600' }}>
                       <Clock size={12} />
-                      <span>{formatTime(task.date)}</span>
+                      <span>{renderTaskDateRange(task)}</span>
                     </div>
                   </div>
                 </div>
@@ -360,7 +390,7 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                     )}
                     <div className="meta-item" style={{ fontSize: '11px', marginTop: '4px', color: 'var(--text-secondary)', fontWeight: '600' }}>
                       <Clock size={12} />
-                      <span>{formatDate(task.date)} at {formatTime(task.date)}</span>
+                      <span>{formatDate(task.date)} at {renderTaskDateRange(task)}</span>
                     </div>
                   </div>
                 </div>
@@ -440,7 +470,7 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                     )}
                     <div className="meta-item" style={{ fontSize: '11px', marginTop: '4px', color: '#f59e0b', fontWeight: '600' }}>
                       <Clock size={12} />
-                      <span>Overdue: {formatDate(task.date)} at {formatTime(task.date)}</span>
+                      <span>Overdue: {formatDate(task.date)} at {renderTaskDateRange(task)}</span>
                     </div>
                   </div>
 

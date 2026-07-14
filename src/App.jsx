@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import GatekeeperLock from './components/GatekeeperLock';
-import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw } from 'lucide-react';
+import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert } from 'lucide-react';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -37,8 +37,22 @@ export default function App() {
   const [drafts, setDrafts] = useState([]);
   const [draftToEdit, setDraftToEdit] = useState(null);
 
+  // Share view states
+  const [isShareView, setIsShareView] = useState(false);
+  const [sharedEvent, setSharedEvent] = useState(null);
+  const [sharedEventLoading, setSharedEventLoading] = useState(false);
+  const [sharedEventError, setSharedEventError] = useState('');
+
   // 1. Initial Gatekeeper Lock Check, Load Events & Fetch Site Password
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareId = params.get('share');
+    if (shareId) {
+      setIsShareView(true);
+      fetchSharedEvent(shareId);
+      return;
+    }
+
     fetchSitePassword();
     const expiry = localStorage.getItem('my-event-gatekeeper-expiry');
     if (expiry) {
@@ -53,6 +67,30 @@ export default function App() {
       setLoading(false);
     }
   }, []);
+
+  const fetchSharedEvent = async (eventId) => {
+    setSharedEventLoading(true);
+    setSharedEventError('');
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', eventId)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setSharedEvent(data);
+      } else {
+        setSharedEventError('Event not found or has been deleted.');
+      }
+    } catch (err) {
+      setSharedEventError(err.message || 'Failed to load shared event.');
+    } finally {
+      setSharedEventLoading(false);
+      setLoading(false);
+    }
+  };
 
   const fetchSitePassword = async () => {
     try {
@@ -410,10 +448,220 @@ export default function App() {
 
   const { pendingTasksCount, upcomingEventsCount } = getCounts();
 
-  // Gatekeeper Gate
-  if (isLocked) {
-    return <GatekeeperLock onUnlock={handleUnlock} logo={logo} sitePassword={sitePassword} />;
-  }
+  // Shared Event Public Landing Page View
+  const renderSharedEventView = () => {
+    const toggleTheme = () => {
+      if (theme === 'light') {
+        setTheme('dark');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('my-event-theme', 'dark');
+      } else {
+        setTheme('light');
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('my-event-theme', 'light');
+      }
+    };
+
+    const formatDate = (dateStr) => {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    };
+
+    const formatTime = (dateStr) => {
+      const d = new Date(dateStr);
+      return d.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    const formatPrice = (usdPrice) => {
+      const rawPrice = parseFloat(usdPrice);
+      if (isNaN(rawPrice) || rawPrice <= 0) return 'Free';
+      const khr = Math.round(rawPrice * 4000);
+      return `$${rawPrice.toFixed(2)} / ${khr.toLocaleString()}៛`;
+    };
+
+    const getMapsUrl = (loc) => {
+      if (!loc) return '#';
+      if (loc.includes('http')) return loc;
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
+    };
+
+    return (
+      <div className="app-container" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <header className="app-header" style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+          <div className="app-logo-area">
+            {logo ? (
+              <div className="logo-container" style={{ flexShrink: 0 }}>
+                <img src={logo} alt="App Logo" className="app-custom-logo" />
+              </div>
+            ) : (
+              <div className="logo-placeholder" style={{ flexShrink: 0 }} />
+            )}
+            <span className="app-title-text">My Event</span>
+          </div>
+
+          <div className="header-actions">
+            <button 
+              className="icon-btn" 
+              onClick={toggleTheme}
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+          </div>
+        </header>
+
+        <main className="app-content" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+          {sharedEventError ? (
+            <div className="card" style={{ maxWidth: '420px', width: '100%', padding: '32px 24px', textAlign: 'center', animation: 'fadeIn 0.3s ease-out' }}>
+              <ShieldAlert size={48} style={{ color: '#ef4444', marginBottom: '16px', margin: '0 auto' }} />
+              <h2 style={{ fontSize: '20px', fontWeight: '800', marginBottom: '8px', color: 'var(--text-primary)' }}>Shared Event Error</h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px', lineHeight: 1.5 }}>{sharedEventError}</p>
+              <a href="/" style={{
+                display: 'block', textDecoration: 'none', backgroundColor: 'var(--accent)', color: '#000',
+                fontWeight: '700', padding: '12px', borderRadius: '12px', fontSize: '14px'
+              }}>
+                Go to Home
+              </a>
+            </div>
+          ) : sharedEvent ? (
+            <div className="card" style={{ maxWidth: '480px', width: '100%', padding: '28px 24px', animation: 'fadeIn 0.3s ease-out' }}>
+              <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                <span style={{
+                  display: 'inline-block', padding: '4px 12px', borderRadius: '20px',
+                  backgroundColor: 'var(--accent-glow)', color: 'var(--accent)', fontSize: '12px', fontWeight: '700',
+                  textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px'
+                }}>
+                  Public Invitation
+                </span>
+                <h1 style={{ fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginTop: '4px', lineHeight: 1.3 }}>
+                  {sharedEvent.name}
+                </h1>
+              </div>
+
+              <div className="event-detail-grid" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Category Type */}
+                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                    <Tag size={20} />
+                  </span>
+                  <div className="detail-content">
+                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Event Type</span>
+                    <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>{sharedEvent.type}</span>
+                  </div>
+                </div>
+
+                {/* Organization */}
+                {sharedEvent.organization && (
+                  <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                      <Users size={20} />
+                    </span>
+                    <div className="detail-content">
+                      <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Organization</span>
+                      <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>{sharedEvent.organization}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Date range display */}
+                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                    <Calendar size={20} />
+                  </span>
+                  <div className="detail-content">
+                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Date</span>
+                    <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>
+                      {sharedEvent.end_date && new Date(sharedEvent.date).toDateString() !== new Date(sharedEvent.end_date).toDateString() ? (
+                        `${formatDate(sharedEvent.date)} to ${formatDate(sharedEvent.end_date)}`
+                      ) : (
+                        formatDate(sharedEvent.date)
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Time range display */}
+                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                    <Clock size={20} />
+                  </span>
+                  <div className="detail-content">
+                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Time</span>
+                    <span className="detail-val" style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px' }}>
+                      {sharedEvent.end_date ? (
+                        `${formatTime(sharedEvent.date)} - ${formatTime(sharedEvent.end_date)}`
+                      ) : (
+                        formatTime(sharedEvent.date)
+                      )}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Location */}
+                {sharedEvent.location && (
+                  <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                      <MapPin size={20} />
+                    </span>
+                    <div className="detail-content" style={{ flex: 1 }}>
+                      <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Location / Address</span>
+                      <span className="detail-val" style={{ display: 'block', color: 'var(--text-primary)', fontWeight: '700', fontSize: '15px', marginBottom: '8px' }}>{sharedEvent.location}</span>
+                      
+                      <a 
+                        href={getMapsUrl(sharedEvent.location)} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="maps-link-btn"
+                        style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none',
+                          backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border)', borderRadius: '8px',
+                          padding: '8px 16px', fontSize: '13px', color: 'var(--text-primary)', fontWeight: '700',
+                          transition: '0.2s'
+                        }}
+                      >
+                        <MapPin size={16} style={{ color: 'var(--accent)' }} />
+                        <span>Open in Google Maps</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Cost */}
+                <div className="detail-item" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                    <DollarSign size={20} />
+                  </span>
+                  <div className="detail-content">
+                    <span className="detail-label" style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>Cost</span>
+                    <span className="detail-val" style={{ display: 'inline-block', padding: '4px 10px', borderRadius: '8px', backgroundColor: sharedEvent.is_paid ? 'rgba(239, 68, 68, 0.1)' : 'var(--accent-glow)', color: sharedEvent.is_paid ? '#ef4444' : 'var(--accent)', fontWeight: '700', fontSize: '14px' }}>
+                      {formatPrice(sharedEvent.price)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invitation footer */}
+              <div style={{ marginTop: '32px', paddingTop: '20px', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0 }}>
+                  Personal Event tracker powered by <strong>My Event</strong>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="loading-container"><div className="spinner"></div></div>
+          )}
+        </main>
+      </div>
+    );
+  };
 
   // Render initial loading state
   if (loading) {
@@ -424,6 +672,16 @@ export default function App() {
         </div>
       </div>
     );
+  }
+
+  // Shared Event Public Landing Page View
+  if (isShareView) {
+    return renderSharedEventView();
+  }
+
+  // Gatekeeper Gate
+  if (isLocked) {
+    return <GatekeeperLock onUnlock={handleUnlock} logo={logo} sitePassword={sitePassword} />;
   }
 
   return (

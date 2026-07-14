@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     is_completed BOOLEAN DEFAULT false NOT NULL,
     description TEXT DEFAULT '' NOT NULL,
     organization TEXT DEFAULT '' NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

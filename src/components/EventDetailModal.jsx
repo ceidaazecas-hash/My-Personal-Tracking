@@ -26,6 +26,19 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [editMinute, setEditMinute] = useState('00');
   const [editAmPm, setEditAmPm] = useState('PM');
 
+  // Custom End DatePicker States for Edit Mode
+  const [hasEndDate, setHasEndDate] = useState(false);
+  const [editEndMonth, setEditEndMonth] = useState(0);
+  const [editEndDay, setEditEndDay] = useState(1);
+  const [editEndYear, setEditEndYear] = useState(new Date().getFullYear());
+  const [editEndHour, setEditEndHour] = useState('12');
+  const [editEndMinute, setEditEndMinute] = useState('00');
+  const [editEndAmPm, setEditEndAmPm] = useState('PM');
+
+  // Share Modal States
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
   // Swipe-down to close gesture states
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -78,6 +91,30 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       setEditHour(String(hour12).padStart(2, '0'));
       setEditMinute(String(eventDate.getMinutes()).padStart(2, '0'));
       setEditAmPm(ampm);
+
+      if (event.end_date) {
+        setHasEndDate(true);
+        const eventEndDate = new Date(event.end_date);
+        setEditEndMonth(eventEndDate.getMonth());
+        setEditEndDay(eventEndDate.getDate());
+        setEditEndYear(eventEndDate.getFullYear());
+        
+        const endHour24 = eventEndDate.getHours();
+        const endAmpm = endHour24 >= 12 ? 'PM' : 'AM';
+        const endHour12 = endHour24 % 12 || 12;
+        setEditEndHour(String(endHour12).padStart(2, '0'));
+        setEditEndMinute(String(eventEndDate.getMinutes()).padStart(2, '0'));
+        setEditEndAmPm(endAmpm);
+      } else {
+        setHasEndDate(false);
+        // Default end date matches start date
+        setEditEndMonth(eventDate.getMonth());
+        setEditEndDay(eventDate.getDate());
+        setEditEndYear(eventDate.getFullYear());
+        setEditEndHour(String(hour12).padStart(2, '0'));
+        setEditEndMinute(String(eventDate.getMinutes()).padStart(2, '0'));
+        setEditEndAmPm(ampm);
+      }
     }
   }, [event, isEditing]);
 
@@ -144,6 +181,84 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
     });
   };
 
+  const renderReadOnlyDateRange = () => {
+    const startD = new Date(event.date);
+    const hasEnd = !!event.end_date;
+    const endD = hasEnd ? new Date(event.end_date) : null;
+
+    const startFormattedDate = formatDate(event.date);
+    const startFormattedTime = formatTime(event.date);
+
+    if (!hasEnd) {
+      return (
+        <>
+          <div className="detail-item">
+            <span className="detail-label-icon"><Calendar size={20} /></span>
+            <div className="detail-content">
+              <span className="detail-label">Date</span>
+              <span className="detail-val">{startFormattedDate}</span>
+            </div>
+          </div>
+
+          <div className="detail-item">
+            <span className="detail-label-icon"><Clock size={20} /></span>
+            <div className="detail-content">
+              <span className="detail-label">Scheduled Time</span>
+              <span className="detail-val">{startFormattedTime}</span>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    const endFormattedDate = formatDate(event.end_date);
+    const endFormattedTime = formatTime(event.end_date);
+
+    const isSameDay = startD.toDateString() === endD.toDateString();
+
+    if (isSameDay) {
+      return (
+        <>
+          <div className="detail-item">
+            <span className="detail-label-icon"><Calendar size={20} /></span>
+            <div className="detail-content">
+              <span className="detail-label">Date</span>
+              <span className="detail-val">{startFormattedDate}</span>
+            </div>
+          </div>
+
+          <div className="detail-item">
+            <span className="detail-label-icon"><Clock size={20} /></span>
+            <div className="detail-content">
+              <span className="detail-label">Scheduled Time</span>
+              <span className="detail-val">{startFormattedTime} - {endFormattedTime}</span>
+            </div>
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="detail-item">
+          <span className="detail-label-icon"><Calendar size={20} /></span>
+          <div className="detail-content">
+            <span className="detail-label">Date Range</span>
+            <span className="detail-val">{startFormattedDate} to {endFormattedDate}</span>
+          </div>
+        </div>
+
+        <div className="detail-item">
+          <span className="detail-label-icon"><Clock size={20} /></span>
+          <div className="detail-content">
+            <span className="detail-label">Scheduled Time</span>
+            <span className="detail-val">{startFormattedTime} to {endFormattedTime}</span>
+          </div>
+        </div>
+      </>
+    );
+  };
+
   const getMapsUrl = () => {
     if (!event.location) return '#';
     if (event.location.includes('http')) return event.location;
@@ -186,10 +301,40 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       return;
     }
 
+    let endIso = null;
+    if (hasEndDate) {
+      let endHour24 = parseInt(editEndHour);
+      if (editEndAmPm === 'PM' && endHour24 !== 12) endHour24 += 12;
+      if (editEndAmPm === 'AM' && endHour24 === 12) endHour24 = 0;
+
+      const localEndDate = new Date(
+        editEndYear,
+        editEndMonth,
+        editEndDay,
+        endHour24,
+        parseInt(editEndMinute)
+      );
+
+      if (isNaN(localEndDate.getTime())) {
+        setErrorMsg('Selected end date & time is invalid.');
+        setLoading(false);
+        return;
+      }
+
+      if (localEndDate <= localDate) {
+        setErrorMsg('End date & time must be after start date & time.');
+        setLoading(false);
+        return;
+      }
+
+      endIso = localEndDate.toISOString();
+    }
+
     try {
       const updatedData = {
         name,
         date: localDate.toISOString(),
+        end_date: endIso,
       };
 
       if (!event.is_task) {
@@ -511,7 +656,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                 color: 'var(--accent)',
                 letterSpacing: '0.5px'
               }}>
-                📅 {new Date(editYear, editMonth, editDay).toLocaleDateString('en-US', { weekday: 'long' })}
+                {new Date(editYear, editMonth, editDay).toLocaleDateString('en-US', { weekday: 'long' })}
               </div>
             </div>
 
@@ -563,6 +708,165 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                 </div>
               </div>
             </div>
+
+            {/* End Date toggle & picker */}
+            <div className="input-group">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="input-label" style={{ margin: 0 }}>Set End Date & Time</span>
+                <label className="toggle-switch-container" style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '46px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={hasEndDate}
+                    onChange={(e) => setHasEndDate(e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span className="toggle-slider" style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: hasEndDate ? 'var(--accent)' : 'var(--border)',
+                    borderRadius: '24px',
+                    transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: hasEndDate ? '24px' : '4px',
+                      bottom: '3px',
+                      backgroundColor: '#fff',
+                      borderRadius: '50%',
+                      transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }} />
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {hasEndDate && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.2s ease-out' }}>
+                {/* Custom End Date Picker (Month, Day, Year Select list grid row) */}
+                <div className="input-group">
+                  <label className="input-label" style={{ textAlign: 'center' }}>End Date</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '8px' }}>
+                    
+                    {/* End Month Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={editEndMonth}
+                        onChange={(e) => setEditEndMonth(parseInt(e.target.value))}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {months.map((m, idx) => (
+                          <option key={m} value={idx}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* End Day Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={editEndDay}
+                        onChange={(e) => setEditEndDay(parseInt(e.target.value))}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {Array.from({ length: getDaysInMonth(editEndMonth, editEndYear) }, (_, i) => i + 1).map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* End Year Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={editEndYear}
+                        onChange={(e) => setEditEndYear(parseInt(e.target.value))}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {years.map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  {/* End Day name display */}
+                  <div style={{
+                    textAlign: 'center',
+                    marginTop: '6px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: 'var(--accent)',
+                    letterSpacing: '0.5px'
+                  }}>
+                    {new Date(editEndYear, editEndMonth, editEndDay).toLocaleDateString('en-US', { weekday: 'long' })}
+                  </div>
+                </div>
+
+                {/* Custom End Time Picker (Hour, Minute, AM/PM Segmented control row) */}
+                <div className="input-group">
+                  <label className="input-label" style={{ textAlign: 'center' }}>End Time</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    
+                    {/* End Hour Select Picker */}
+                    <div className="select-container" style={{ flex: 1 }}>
+                      <select 
+                        value={editEndHour}
+                        onChange={(e) => setEditEndHour(e.target.value)}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0')).map(h => (
+                          <option key={h} value={h}>{h}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <span className="time-separator">:</span>
+
+                    {/* End Minute Select Picker */}
+                    <div className="select-container" style={{ flex: 1 }}>
+                      <select 
+                        value={editEndMinute}
+                        onChange={(e) => setEditEndMinute(e.target.value)}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0')).map(m => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* End AM/PM toggle button segment */}
+                    <div className="toggle-selector time-ampm-toggle">
+                      <div 
+                        className={`toggle-option ${editEndAmPm === 'AM' ? 'active' : ''}`}
+                        onClick={() => setEditEndAmPm('AM')}
+                      >
+                        AM
+                      </div>
+                      <div 
+                        className={`toggle-option ${editEndAmPm === 'PM' ? 'active' : ''}`}
+                        onClick={() => setEditEndAmPm('PM')}
+                      >
+                        PM
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Event specific: Location */}
             {!event.is_task && (
@@ -703,21 +1007,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               )}
 
               {/* Date & Time */}
-              <div className="detail-item">
-                <span className="detail-label-icon"><Calendar size={20} /></span>
-                <div className="detail-content">
-                  <span className="detail-label">Date</span>
-                  <span className="detail-val">{formatDate(event.date)}</span>
-                </div>
-              </div>
-
-              <div className="detail-item">
-                <span className="detail-label-icon"><Clock size={20} /></span>
-                <div className="detail-content">
-                  <span className="detail-label">Scheduled Time</span>
-                  <span className="detail-val">{formatTime(event.date)}</span>
-                </div>
-              </div>
+              {renderReadOnlyDateRange()}
 
               {/* Location (Event only) */}
               {!event.is_task && (
@@ -815,26 +1105,260 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             )}
 
             {/* Read-only Actions: Edit & Delete */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '28px' }}>
-              <button 
-                type="button" 
-                className="btn-secondary" 
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit2 size={16} />
-                <span>Edit</span>
-              </button>
-              
-              <button 
-                className="btn-danger-outline"
-                style={{ margin: 0 }}
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 size={16} />
-                <span>Delete</span>
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '28px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', margin: 0 }}
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit2 size={16} />
+                  <span>Edit</span>
+                </button>
+                
+                <button 
+                  className="btn-danger-outline"
+                  style={{ margin: 0 }}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 size={16} />
+                  <span>Delete</span>
+                </button>
+              </div>
+
+              {!event.is_task && (
+                <button 
+                  type="button" 
+                  className="btn-primary"
+                  style={{ 
+                    margin: 0, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '8px',
+                    backgroundColor: 'var(--accent)',
+                    color: '#000',
+                    fontWeight: '700'
+                  }}
+                  onClick={() => setShowShareModal(true)}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.41" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  <span>Share Event</span>
+                </button>
+              )}
             </div>
+
+            {/* Custom Share Modal Popup */}
+            {showShareModal && (
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 9999,
+                backgroundColor: 'rgba(0,0,0,0.55)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '24px'
+              }}>
+                <div style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: '20px',
+                  padding: '28px 24px',
+                  width: '100%',
+                  maxWidth: '380px',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+                  animation: 'slideUp 0.2s ease-out',
+                  position: 'relative'
+                }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '4px', textAlign: 'center' }}>
+                    Share Event
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '20px', textAlign: 'center' }}>
+                    Share <strong>"{event.name}"</strong> with others
+                  </p>
+
+                  {/* Share link input with copy button */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'var(--bg-primary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '12px',
+                    padding: '8px 12px',
+                    marginBottom: '20px',
+                    gap: '8px'
+                  }}>
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/?share=${event.id}`}
+                      style={{
+                        flex: 1,
+                        background: 'none',
+                        border: 'none',
+                        fontSize: '13px',
+                        color: 'var(--text-primary)',
+                        outline: 'none',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onClick={(e) => e.target.select()}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/?share=${event.id}`);
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                      }}
+                      style={{
+                        backgroundColor: 'var(--accent)',
+                        color: '#000',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {copySuccess ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+
+                  {/* Social sharing icons grid */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: '16px',
+                    marginBottom: '24px'
+                  }}>
+                    {/* Telegram */}
+                    <a
+                      href={`https://t.me/share/url?url=${encodeURIComponent(`${window.location.origin}/?share=${event.id}`)}&text=${encodeURIComponent(`Check out this event: ${event.name}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '6px',
+                        textDecoration: 'none',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{
+                        width: '48px', height: '48px', borderRadius: '12px',
+                        backgroundColor: '#229ED9', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: '20px'
+                      }}>
+                        ✈️
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: '600' }}>Telegram</span>
+                    </a>
+
+                    {/* Messenger */}
+                    <div
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/?share=${event.id}`);
+                        alert("Link copied! You can now paste and share it in your Facebook Messenger chat.");
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{
+                        width: '48px', height: '48px', borderRadius: '12px',
+                        backgroundColor: '#0084FF', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: '20px'
+                      }}>
+                        💬
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: '600' }}>Messenger</span>
+                    </div>
+
+                    {/* TikTok / Other share method */}
+                    <div
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/?share=${event.id}`);
+                        alert("Link copied! You can paste this link in your TikTok bio or video comment section to share it.");
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <div style={{
+                        width: '48px', height: '48px', borderRadius: '12px',
+                        backgroundColor: '#010101', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: '20px'
+                      }}>
+                        🎵
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: '600' }}>TikTok</span>
+                    </div>
+                  </div>
+
+                  {/* Native share sheet trigger if supported */}
+                  {navigator.share && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await navigator.share({
+                            title: event.name,
+                            text: `Check out this event: ${event.name}`,
+                            url: `${window.location.origin}/?share=${event.id}`,
+                          });
+                        } catch (err) {
+                          console.log('Native share failed or cancelled');
+                        }
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: '1px solid var(--accent)',
+                        background: 'var(--accent-glow)',
+                        color: 'var(--accent)',
+                        fontWeight: '700',
+                        fontSize: '13px',
+                        marginBottom: '12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📱 Open System Share
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setShowShareModal(false)}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      borderRadius: '12px',
+                      border: '1px solid var(--border)',
+                      background: 'none',
+                      color: 'var(--text-primary)',
+                      fontWeight: '600',
+                      fontSize: '13px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
 

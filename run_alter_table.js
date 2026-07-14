@@ -16,6 +16,10 @@ async function runAlterTable() {
     await client.query("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS organization TEXT DEFAULT '';");
     console.log("Column 'organization' added successfully!");
 
+    console.log("Adding column 'end_date' to 'events' table if it does not exist...");
+    await client.query("ALTER TABLE public.events ADD COLUMN IF NOT EXISTS end_date TIMESTAMP WITH TIME ZONE;");
+    console.log("Column 'end_date' added successfully!");
+
     console.log("Reloading schema cache to make sure Supabase client registers it immediately...");
     await client.query("NOTIFY pgrst, 'reload schema';");
     console.log("Schema cache reload triggered successfully!");

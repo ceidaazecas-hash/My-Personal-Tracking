@@ -49,6 +49,15 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
   // Custom Save as Draft Confirm Overlay State
   const [showDraftConfirm, setShowDraftConfirm] = useState(false);
 
+  // Custom End Date Picker states
+  const [hasEndDate, setHasEndDate] = useState(false);
+  const [selectedEndMonth, setSelectedEndMonth] = useState(now.getMonth());
+  const [selectedEndDay, setSelectedEndDay] = useState(now.getDate());
+  const [selectedEndYear, setSelectedEndYear] = useState(now.getFullYear());
+  const [selectedEndHour, setSelectedEndHour] = useState(String(initialHour12).padStart(2, '0'));
+  const [selectedEndMinute, setSelectedEndMinute] = useState(String(now.getMinutes()).padStart(2, '0'));
+  const [selectedEndAmPm, setSelectedEndAmPm] = useState(isPm ? 'PM' : 'AM');
+
   // Reset form states cleanly
   const resetForm = () => {
     setName('');
@@ -63,6 +72,13 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     setTaskType('Work');
     setCustomTaskType('');
     setErrorMsg('');
+    setHasEndDate(false);
+    setSelectedEndMonth(now.getMonth());
+    setSelectedEndDay(now.getDate());
+    setSelectedEndYear(now.getFullYear());
+    setSelectedEndHour(String(initialHour12).padStart(2, '0'));
+    setSelectedEndMinute(String(now.getMinutes()).padStart(2, '0'));
+    setSelectedEndAmPm(isPm ? 'PM' : 'AM');
   };
 
   // Sync mode and pre-populate draft data when modal opens/draftToEdit changes
@@ -82,6 +98,22 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
         setSelectedAmPm(hour24 >= 12 ? 'PM' : 'AM');
         setSelectedHour(String(hour24 % 12 || 12).padStart(2, '0'));
         setSelectedMinute(String(d.getMinutes()).padStart(2, '0'));
+
+        // Parse optional end date
+        if (draftToEdit.end_date) {
+          setHasEndDate(true);
+          const endD = new Date(draftToEdit.end_date);
+          setSelectedEndMonth(endD.getMonth());
+          setSelectedEndDay(endD.getDate());
+          setSelectedEndYear(endD.getFullYear());
+          
+          const endHour24 = endD.getHours();
+          setSelectedEndAmPm(endHour24 >= 12 ? 'PM' : 'AM');
+          setSelectedEndHour(String(endHour24 % 12 || 12).padStart(2, '0'));
+          setSelectedEndMinute(String(endD.getMinutes()).padStart(2, '0'));
+        } else {
+          setHasEndDate(false);
+        }
 
         if (!draftToEdit.is_task) {
           const eventTypesList = ['Run', 'Sport', 'Meeting', 'Birthday', 'Festival'];
@@ -145,6 +177,9 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
   const daysInMonth = getDaysInMonth(selectedMonth, selectedYear);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+  const endDaysInMonth = getDaysInMonth(selectedEndMonth, selectedEndYear);
+  const endDays = Array.from({ length: endDaysInMonth }, (_, i) => i + 1);
+
   const currentYear = now.getFullYear();
   const years = Array.from({ length: 10 }, (_, i) => currentYear + i);
 
@@ -178,12 +213,30 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       parseInt(selectedMinute)
     );
 
+    let endIso = null;
+    if (hasEndDate) {
+      let endHour24 = parseInt(selectedEndHour);
+      if (selectedEndAmPm === 'PM' && endHour24 !== 12) endHour24 += 12;
+      if (selectedEndAmPm === 'AM' && endHour24 === 12) endHour24 = 0;
+      const localEndDate = new Date(
+        selectedEndYear,
+        selectedEndMonth,
+        selectedEndDay,
+        endHour24,
+        parseInt(selectedEndMinute)
+      );
+      if (!isNaN(localEndDate.getTime())) {
+        endIso = localEndDate.toISOString();
+      }
+    }
+
     const draftId = draftToEdit ? draftToEdit.id : 'draft_' + Date.now();
     const draftItem = {
       id: draftId,
       is_task: mode === 'task',
       name: name.trim(),
       date: localDate.toISOString(),
+      end_date: endIso,
       type: mode === 'event' ? (type === 'Other' ? customEventType : type) : (taskType === 'Other' ? customTaskType : taskType),
       location: mode === 'event' ? location.trim() : '',
       organization: mode === 'event' ? organization.trim() : '',
@@ -317,12 +370,40 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       return;
     }
 
+    let endIso = null;
+    if (hasEndDate) {
+      let endHour24 = parseInt(selectedEndHour);
+      if (selectedEndAmPm === 'PM' && endHour24 !== 12) endHour24 += 12;
+      if (selectedEndAmPm === 'AM' && endHour24 === 12) endHour24 = 0;
+
+      const localEndDate = new Date(
+        selectedEndYear,
+        selectedEndMonth,
+        selectedEndDay,
+        endHour24,
+        parseInt(selectedEndMinute)
+      );
+
+      if (isNaN(localEndDate.getTime())) {
+        setErrorMsg('Selected end date & time is invalid.');
+        return;
+      }
+
+      if (localEndDate <= localDate) {
+        setErrorMsg('End date & time must be after start date & time.');
+        return;
+      }
+
+      endIso = localEndDate.toISOString();
+    }
+
     setLoading(true);
 
     try {
       const itemData = {
         name: name.trim(),
         date: localDate.toISOString(),
+        end_date: endIso,
         is_task: mode === 'task',
       };
 
@@ -593,7 +674,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                     color: 'var(--accent)',
                     letterSpacing: '0.5px'
                   }}>
-                    📅 {dayName}
+                    {dayName}
                   </div>
                 );
               })()}
@@ -653,6 +734,187 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                 </div>
               </div>
             </div>
+
+            {/* End Date toggle & picker */}
+            <div className="input-group">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span className="input-label" style={{ margin: 0 }}>Set End Date & Time</span>
+                <label className="toggle-switch-container" style={{
+                  position: 'relative',
+                  display: 'inline-block',
+                  width: '46px',
+                  height: '24px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={hasEndDate}
+                    onChange={(e) => setHasEndDate(e.target.checked)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span className="toggle-slider" style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: hasEndDate ? 'var(--accent)' : 'var(--border)',
+                    borderRadius: '24px',
+                    transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                  }}>
+                    <span style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '18px',
+                      width: '18px',
+                      left: hasEndDate ? '24px' : '4px',
+                      bottom: '3px',
+                      backgroundColor: '#fff',
+                      borderRadius: '50%',
+                      transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                    }} />
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {hasEndDate && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', animation: 'fadeIn 0.2s ease-out' }}>
+                {/* Custom End Date Picker (Month, Day, Year Select list grid row) */}
+                <div className="input-group">
+                  <label className="input-label">End Date</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '8px' }}>
+                    
+                    {/* End Month Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={selectedEndMonth}
+                        onChange={(e) => {
+                          const newMonth = parseInt(e.target.value);
+                          setSelectedEndMonth(newMonth);
+                          const newDaysInMonth = getDaysInMonth(newMonth, selectedEndYear);
+                          if (selectedEndDay > newDaysInMonth) {
+                            setSelectedEndDay(newDaysInMonth);
+                          }
+                        }}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {months.map((m, idx) => (
+                          <option key={m} value={idx}>{m}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* End Day Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={selectedEndDay}
+                        onChange={(e) => setSelectedEndDay(parseInt(e.target.value))}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {endDays.map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* End Year Select Picker */}
+                    <div className="select-container">
+                      <select 
+                        value={selectedEndYear}
+                        onChange={(e) => {
+                          const newYear = parseInt(e.target.value);
+                          setSelectedEndYear(newYear);
+                          const newDaysInMonth = getDaysInMonth(selectedEndMonth, newYear);
+                          if (selectedEndDay > newDaysInMonth) {
+                            setSelectedEndDay(newDaysInMonth);
+                          }
+                        }}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {years.map(y => (
+                          <option key={y} value={y}>{y}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  {/* End Day name display */}
+                  {(() => {
+                    const d = new Date(selectedEndYear, selectedEndMonth, selectedEndDay);
+                    const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+                    return (
+                      <div style={{
+                        textAlign: 'center',
+                        marginTop: '6px',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        color: 'var(--accent)',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {dayName}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Custom End Time Picker (Hour, Minute, AM/PM Segmented control row) */}
+                <div className="input-group">
+                  <label className="input-label">End Time</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    
+                    {/* End Hour Select Picker */}
+                    <div className="select-container" style={{ flex: 1 }}>
+                      <select 
+                        value={selectedEndHour}
+                        onChange={(e) => setSelectedEndHour(e.target.value)}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map(h => {
+                          const val = String(h).padStart(2, '0');
+                          return <option key={val} value={val}>{val}</option>;
+                        })}
+                      </select>
+                    </div>
+
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>:</span>
+
+                    {/* End Minute Select Picker */}
+                    <div className="select-container" style={{ flex: 1 }}>
+                      <select 
+                        value={selectedEndMinute}
+                        onChange={(e) => setSelectedEndMinute(e.target.value)}
+                        className="select-input"
+                        disabled={loading}
+                      >
+                        {Array.from({ length: 60 }, (_, i) => i).map(m => {
+                          const val = String(m).padStart(2, '0');
+                          return <option key={val} value={val}>{val}</option>;
+                        })}
+                      </select>
+                    </div>
+
+                    {/* End AM/PM toggle button segment */}
+                    <div className="toggle-selector time-ampm-toggle">
+                      <div 
+                        className={`toggle-option ${selectedEndAmPm === 'AM' ? 'active' : ''}`}
+                        onClick={() => setSelectedEndAmPm('AM')}
+                      >
+                        AM
+                      </div>
+                      <div 
+                        className={`toggle-option ${selectedEndAmPm === 'PM' ? 'active' : ''}`}
+                        onClick={() => setSelectedEndAmPm('PM')}
+                      >
+                        PM
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Event-specific: Location Link */}
             {mode === 'event' && (

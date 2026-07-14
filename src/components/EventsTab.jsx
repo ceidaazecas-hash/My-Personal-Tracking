@@ -37,6 +37,50 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
     });
   };
 
+  const renderEventCardDateRange = (eventItem) => {
+    const startD = new Date(eventItem.date);
+    const hasEnd = !!eventItem.end_date;
+    const endD = hasEnd ? new Date(eventItem.end_date) : null;
+
+    const startFormatted = startD.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }) + ' at ' + startD.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    if (!hasEnd) {
+      return startFormatted;
+    }
+
+    const startDayStr = startD.toDateString();
+    const endDayStr = endD.toDateString();
+    const isSameDay = startDayStr === endDayStr;
+
+    if (isSameDay) {
+      const endFormattedTime = endD.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      return `${startFormatted} - ${endFormattedTime}`;
+    }
+
+    const endFormatted = endD.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }) + ' at ' + endD.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    return `${startFormatted} to ${endFormatted}`;
+  };
+
   // Get dynamic categories list
   const getCategories = () => {
     const cats = new Set();
@@ -75,13 +119,18 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
 
     if (activeStatusTab === 'Today') {
       result = result.filter(e => {
-        const eventDate = new Date(e.date);
-        return eventDate >= todayStart && eventDate < todayEnd;
+        const startD = new Date(e.date);
+        const endD = e.end_date ? new Date(e.end_date) : null;
+        return startD < todayEnd && (endD ? endD >= todayStart : startD >= todayStart);
       });
     } else if (activeStatusTab === 'Upcoming') {
       result = result.filter(e => new Date(e.date) >= todayEnd);
     } else if (activeStatusTab === 'Past') {
-      result = result.filter(e => new Date(e.date) < todayStart);
+      result = result.filter(e => {
+        const startD = new Date(e.date);
+        const endD = e.end_date ? new Date(e.end_date) : null;
+        return endD ? endD < todayStart : startD < todayStart;
+      });
     }
 
     return result;
@@ -123,12 +172,17 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
     todayEnd.setDate(todayEnd.getDate() + 1);
 
     const todayCount = baseEvents.filter(e => {
-      const d = new Date(e.date);
-      return d >= todayStart && d < todayEnd;
+      const startD = new Date(e.date);
+      const endD = e.end_date ? new Date(e.end_date) : null;
+      return startD < todayEnd && (endD ? endD >= todayStart : startD >= todayStart);
     }).length;
 
     const upcomingCount = baseEvents.filter(e => new Date(e.date) >= todayEnd).length;
-    const pastCount = baseEvents.filter(e => new Date(e.date) < todayStart).length;
+    const pastCount = baseEvents.filter(e => {
+      const startD = new Date(e.date);
+      const endD = e.end_date ? new Date(e.end_date) : null;
+      return endD ? endD < todayStart : startD < todayStart;
+    }).length;
 
     return {
       todayCount,
@@ -151,8 +205,15 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
   const filteredEvents = getFilteredEvents();
 
   // Helper to split them if in 'All' view, otherwise show single list
-  const upcomingEvents = filteredEvents.filter(e => new Date(e.date) >= now).sort((a, b) => new Date(a.date) - new Date(b.date));
-  const pastEvents = filteredEvents.filter(e => new Date(e.date) < now).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const upcomingEvents = filteredEvents.filter(e => {
+    const endD = e.end_date ? new Date(e.end_date) : new Date(e.date);
+    return endD >= now;
+  }).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const pastEvents = filteredEvents.filter(e => {
+    const endD = e.end_date ? new Date(e.end_date) : new Date(e.date);
+    return endD < now;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return (
     <div className="events-tab-container">
@@ -351,7 +412,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                           <div className="event-card-meta">
                             <span className="meta-item">
                               <Calendar size={12} style={{ color: 'var(--accent)' }} />
-                              <span>{formatDate(event.date)}</span>
+                              <span>{renderEventCardDateRange(event)}</span>
                             </span>
                             {event.organization && (
                               <span className="meta-item" style={{ marginTop: '2px' }}>
@@ -417,7 +478,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                           <div className="event-card-meta">
                             <span className="meta-item">
                               <Calendar size={12} />
-                              <span>{formatDate(event.date)}</span>
+                              <span>{renderEventCardDateRange(event)}</span>
                             </span>
                             {event.organization && (
                               <span className="meta-item" style={{ marginTop: '2px' }}>
@@ -487,7 +548,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                         <div className="event-card-meta">
                           <span className="meta-item">
                             {isPast ? <Clock size={12} /> : <Calendar size={12} style={{ color: 'var(--accent)' }} />}
-                            <span>{formatDate(event.date)}</span>
+                            <span>{renderEventCardDateRange(event)}</span>
                           </span>
                           {event.organization && (
                             <span className="meta-item" style={{ marginTop: '2px' }}>
