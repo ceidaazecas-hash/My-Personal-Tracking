@@ -44,19 +44,19 @@ html.dark {
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+html {
+  height: 100%;
 }
 
 body {
+  width: 100%;
+  min-height: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   font-family: var(--font-sans);
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
   display: flex;
   flex-direction: column;
 }
@@ -64,8 +64,7 @@ body {
 /* App Container (Responsive: Full-screen on desktop/laptop) */
 #root {
   width: 100%;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   flex: 1;
