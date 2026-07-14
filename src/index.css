@@ -1331,3 +1331,20 @@ html.dark select.text-input {
 .toggle-switch-container input:checked + .toggle-slider::before {
   transform: translateX(20px);
 }
+
+/* Global website footer */
+.global-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  background-color: var(--bg-secondary);
+}
+
+@media (max-width: 768px) {
+  .global-footer {
+    padding-bottom: 96px; /* space for mobile bottom navigation bar */
+  }
+}

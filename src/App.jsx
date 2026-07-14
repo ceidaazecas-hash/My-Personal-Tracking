@@ -694,6 +694,9 @@ export default function App() {
                 <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, fontWeight: '500' }}>
                   Personal Event tracker powered by <strong>My Event</strong>
                 </p>
+                <p style={{ fontSize: '11px', color: 'var(--text-secondary)', marginTop: '4px', opacity: 0.8, fontWeight: '600' }}>
+                  Build by Sora
+                </p>
               </div>
             </div>
           ) : (
@@ -826,6 +829,13 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Global website footer */}
+      <footer className="global-footer">
+        <p style={{ margin: 0, fontWeight: '600' }}>
+          &copy; {new Date().getFullYear()} My Event. Build by <strong>Sora</strong>. All rights reserved.
+        </p>
+      </footer>
 
       {/* Floating Add Action Button */}
       {activeTab !== 'settings' && (
