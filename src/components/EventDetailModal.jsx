@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, Calendar, MapPin, DollarSign, Trash2, Tag, FileText, CheckCircle2, Edit2, Save, RotateCcw, Clock, Upload, Users, Plus } from 'lucide-react';
+import { X, Calendar, MapPin, DollarSign, Trash2, Tag, FileText, CheckCircle2, Edit2, Save, RotateCcw, Clock, Upload, Users, Plus, Share2 } from 'lucide-react';
 import { Activity, Trophy, Briefcase, Gift, Sparkles, Utensils, Dumbbell, HelpCircle } from 'lucide-react';
 
 export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent, onUpdateEvent, onMoveTaskToToday }) {
@@ -1318,10 +1318,15 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                         fontWeight: '700',
                         fontSize: '13px',
                         marginBottom: '12px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
                       }}
                     >
-                      📱 Open System Share
+                      <Share2 size={16} />
+                      <span>Open System Share</span>
                     </button>
                   )}
 
