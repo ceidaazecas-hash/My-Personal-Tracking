@@ -1371,7 +1371,14 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               textAlign: 'center',
               animation: 'slideUp 0.2s ease-out'
             }}>
-              <div style={{ fontSize: '42px', marginBottom: '12px' }}>🗑️</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <span style={{
+                  display: 'flex', padding: '14px', borderRadius: '50%',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444'
+                }}>
+                  <Trash2 size={32} />
+                </span>
+              </div>
               <h3 style={{ fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
                 Delete {event.is_task ? 'Task' : 'Event'}?
               </h3>
