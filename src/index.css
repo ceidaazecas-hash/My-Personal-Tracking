@@ -1339,7 +1339,11 @@ html.dark select.text-input {
   font-size: 13px;
   color: var(--text-secondary);
   margin-top: auto;
-  background-color: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-top: none !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 768px) {

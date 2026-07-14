@@ -831,7 +831,7 @@ export default function App() {
       </main>
 
       {/* Global website footer */}
-      <footer className="global-footer">
+      <footer className="global-footer" style={{ background: 'transparent', backgroundColor: 'transparent', borderTop: 'none', border: 'none', boxShadow: 'none' }}>
         <p style={{ margin: 0, fontWeight: '600' }}>
           &copy; {new Date().getFullYear()} My Event. Build by <strong>Sora</strong>. All rights reserved.
         </p>
