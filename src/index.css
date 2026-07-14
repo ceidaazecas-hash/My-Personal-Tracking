@@ -1338,13 +1338,13 @@ html.dark select.text-input {
   padding: 20px;
   font-size: 13px;
   color: var(--text-secondary);
-  border-top: 1px solid var(--border);
   margin-top: auto;
-  background-color: var(--bg-secondary);
+  background-color: transparent;
 }
 
 @media (max-width: 768px) {
   .global-footer {
-    padding-bottom: 96px; /* space for mobile bottom navigation bar */
+    font-size: 11px;
+    padding: 12px 16px 96px; /* smaller padding and offset bottom nav */
   }
 }
