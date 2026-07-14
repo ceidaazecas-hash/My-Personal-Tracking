@@ -1229,9 +1229,11 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '12px',
                         backgroundColor: '#229ED9', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: '20px'
+                        color: '#fff'
                       }}>
-                        ✈️
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                          <path d="M19.9 3.3l-18 6.9c-1.2.5-1.2 1.2-.2 1.5l4.6 1.4 10.7-6.8c.5-.3.9-.1.5.2L8.8 14.2l-.3 4.1c.4 0 .6-.2.8-.4l1.9-1.9 4 3c.7.4 1.3.2 1.5-.7L19.9 4.8c.3-1.1-.4-1.6-1-.5z"/>
+                        </svg>
                       </div>
                       <span style={{ fontSize: '11px', fontWeight: '600' }}>Telegram</span>
                     </a>
@@ -1254,9 +1256,11 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '12px',
                         backgroundColor: '#0084FF', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: '20px'
+                        color: '#fff'
                       }}>
-                        💬
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                          <path d="M12 2C6.477 2 2 6.145 2 11.25c0 2.913 1.448 5.516 3.7 7.234V22a.75.75 0 0 0 1.168.625l2.909-1.92a11.1 11.1 0 0 0 2.223.295c5.523 0 10-4.145 10-9.25C22 6.145 17.523 2 12 2zm1.144 12.109l-2.482-2.651-4.836 2.651 5.319-5.65 2.502 2.651 4.816-2.651-5.319 5.65z"/>
+                        </svg>
                       </div>
                       <span style={{ fontSize: '11px', fontWeight: '600' }}>Messenger</span>
                     </div>
@@ -1279,9 +1283,11 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                       <div style={{
                         width: '48px', height: '48px', borderRadius: '12px',
                         backgroundColor: '#010101', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: '20px'
+                        color: '#fff'
                       }}>
-                        🎵
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.01 1.62 4.16.94 1.09 2.27 1.81 3.72 2.05v3.86a9.55 9.55 0 0 1-5.32-1.61c-.04 2.25-.03 4.51-.04 6.76a6.04 6.04 0 0 1-5.59 6.05 6.05 6.05 0 0 1-6.49-5.11 6.04 6.04 0 0 1 4.39-6.72c.04 1.17.02 2.34.03 3.51a2.53 2.53 0 0 0-1.89 2.7c.07 1.34 1.14 2.45 2.48 2.46a2.53 2.53 0 0 0 2.53-2.53c.02-3.83.01-7.66.01-11.49.08-.03.14-.09.18-.16.7-1.12.71-2.47.01-3.6-.04-.07-.1-.13-.18-.16z"/>
+                        </svg>
                       </div>
                       <span style={{ fontSize: '11px', fontWeight: '600' }}>TikTok</span>
                     </div>
