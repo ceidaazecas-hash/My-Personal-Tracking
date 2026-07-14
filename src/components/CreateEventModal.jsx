@@ -739,38 +739,13 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             <div className="input-group">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span className="input-label" style={{ margin: 0 }}>Set End Date & Time</span>
-                <label className="toggle-switch-container" style={{
-                  position: 'relative',
-                  display: 'inline-block',
-                  width: '46px',
-                  height: '24px'
-                }}>
+                <label className="toggle-switch-container">
                   <input
                     type="checkbox"
                     checked={hasEndDate}
                     onChange={(e) => setHasEndDate(e.target.checked)}
-                    style={{ opacity: 0, width: 0, height: 0 }}
                   />
-                  <span className="toggle-slider" style={{
-                    position: 'absolute',
-                    cursor: 'pointer',
-                    top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: hasEndDate ? 'var(--accent)' : 'var(--border)',
-                    borderRadius: '24px',
-                    transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}>
-                    <span style={{
-                      position: 'absolute',
-                      content: '""',
-                      height: '18px',
-                      width: '18px',
-                      left: hasEndDate ? '24px' : '4px',
-                      bottom: '3px',
-                      backgroundColor: '#fff',
-                      borderRadius: '50%',
-                      transition: '0.2s cubic-bezier(0.4, 0, 0.2, 1)'
-                    }} />
-                  </span>
+                  <span className="toggle-slider" />
                 </label>
               </div>
             </div>
