@@ -68,6 +68,7 @@ body {
   min-height: -webkit-fill-available;
   display: flex;
   flex-direction: column;
+  flex: 1;
   position: relative;
   transition: background-color 0.3s ease;
 }
