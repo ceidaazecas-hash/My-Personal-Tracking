@@ -830,6 +830,7 @@ html.dark .price-tag {
   align-items: flex-end;
   justify-content: center;
   animation: fadeIn 0.2s ease-out;
+  will-change: opacity, backdrop-filter;
 }
 
 .modal-sheet {
@@ -844,6 +845,7 @@ html.dark .price-tag {
   max-height: 90vh;
   overflow-y: auto;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 /* On desktop, adapt modal to standard centered dialog card */

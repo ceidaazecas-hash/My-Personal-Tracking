@@ -499,7 +499,7 @@ export default function App() {
           <div className="app-logo-area">
             {logo ? (
               <div className="logo-container" style={{ flexShrink: 0 }}>
-                <img src={logo} alt="App Logo" className="app-custom-logo" />
+                <img src={logo} alt="App Logo" className="app-custom-logo" fetchpriority="high" decoding="async" />
               </div>
             ) : (
               <div className="logo-placeholder" style={{ flexShrink: 0 }} />
@@ -735,7 +735,7 @@ export default function App() {
         <div className="app-logo-area">
           {logo ? (
             <div className="logo-container" style={{ flexShrink: 0 }}>
-              <img src={logo} alt="App Logo" className="app-custom-logo" />
+              <img src={logo} alt="App Logo" className="app-custom-logo" fetchpriority="high" decoding="async" />
             </div>
           ) : (
             <div className="logo-placeholder" style={{ flexShrink: 0 }} />
