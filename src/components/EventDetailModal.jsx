@@ -393,15 +393,30 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
         setLoading(false);
       }
     } else {
-      let initialKm = '';
-      if (event.distance) {
-        const matches = event.distance.match(/(\d+(?:\.\d+)?)/);
-        if (matches) {
-          initialKm = matches[1];
+      const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
+      if (isRunRelated) {
+        let initialKm = '';
+        if (event.distance) {
+          const matches = event.distance.match(/(\d+(?:\.\d+)?)/);
+          if (matches) {
+            initialKm = matches[1];
+          }
+        }
+        setQuickKmValue(initialKm);
+        setShowQuickKmInput(true);
+      } else {
+        try {
+          setLoading(true);
+          await onUpdateEvent(event.id, {
+            has_run: true,
+            distance_run: 0
+          });
+        } catch (err) {
+          setErrorMsg(err.message || 'Failed to update participation.');
+        } finally {
+          setLoading(false);
         }
       }
-      setQuickKmValue(initialKm);
-      setShowQuickKmInput(true);
     }
   };
 
@@ -1152,17 +1167,20 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               )}
 
               {/* Joined & Ran Details (Event only) */}
-              {!event.is_task && event.has_run && (
-                <div className="detail-item">
-                  <span className="detail-label-icon"><Trophy size={20} style={{ color: 'var(--accent)' }} /></span>
-                  <div className="detail-content">
-                    <span className="detail-label">Participation Status</span>
-                    <span className="detail-val" style={{ color: 'var(--accent)', fontWeight: '800' }}>
-                      Joined & Ran ({event.distance_run} km)
-                    </span>
+              {!event.is_task && event.has_run && (() => {
+                const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
+                return (
+                  <div className="detail-item">
+                    <span className="detail-label-icon"><Trophy size={20} style={{ color: 'var(--accent)' }} /></span>
+                    <div className="detail-content">
+                      <span className="detail-label">Participation Status</span>
+                      <span className="detail-val" style={{ color: 'var(--accent)', fontWeight: '800' }}>
+                        {isRunRelated ? `Joined & Ran (${event.distance_run} km)` : 'Joined'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Cost (Event only) */}
               {!event.is_task && (
@@ -1240,26 +1258,34 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '28px' }}>
               
               {/* Joined & Ran Quick Action Button (Event only) */}
-              {!event.is_task && (
-                <button
-                  type="button"
-                  className={event.has_run ? "btn-secondary" : "btn-primary"}
-                  style={{
-                    margin: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    backgroundColor: event.has_run ? 'var(--border)' : 'var(--accent)',
-                    color: event.has_run ? 'var(--text-primary)' : '#ffffff',
-                    fontWeight: '700'
-                  }}
-                  onClick={handleQuickToggleJoined}
-                >
-                  <Trophy size={16} />
-                  <span>{event.has_run ? 'Cancel Joined Status' : 'Mark as Joined & Ran'}</span>
-                </button>
-              )}
+              {!event.is_task && (() => {
+                const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
+                return (
+                  <button
+                    type="button"
+                    className={event.has_run ? "btn-secondary" : "btn-primary"}
+                    style={{
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      backgroundColor: event.has_run ? 'var(--border)' : 'var(--accent)',
+                      color: event.has_run ? 'var(--text-primary)' : '#ffffff',
+                      fontWeight: '700'
+                    }}
+                    onClick={handleQuickToggleJoined}
+                  >
+                    <Trophy size={16} />
+                    <span>
+                      {event.has_run 
+                        ? 'Cancel Joined Status' 
+                        : (isRunRelated ? 'Mark as Joined & Ran' : 'Mark as Joined')
+                      }
+                    </span>
+                  </button>
+                );
+              })()}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button 

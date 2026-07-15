@@ -693,19 +693,22 @@ export default function App() {
                 )}
 
                 {/* Participation */}
-                {sharedEvent.has_run && (
-                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
-                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
-                      <Trophy size={20} />
-                    </span>
-                    <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
-                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Participation</span>
-                      <span className="detail-val" style={{ display: 'block', color: 'var(--accent)', fontWeight: '800', fontSize: '15px' }}>
-                        Completed & Ran ({sharedEvent.distance_run} km)
+                {sharedEvent.has_run && (() => {
+                  const isRunRelated = sharedEvent.type === 'Run' || sharedEvent.type === 'Sport' || !!sharedEvent.distance;
+                  return (
+                    <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
+                      <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                        <Trophy size={20} />
                       </span>
+                      <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
+                        <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Participation</span>
+                        <span className="detail-val" style={{ display: 'block', color: 'var(--accent)', fontWeight: '800', fontSize: '15px' }}>
+                          {isRunRelated ? `Completed & Ran (${sharedEvent.distance_run} km)` : 'Joined'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Cost */}
                 <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
