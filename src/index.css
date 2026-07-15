@@ -22,14 +22,14 @@
 /* Dark Mode Overrides */
 html.dark {
   --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-card: #121212;
+  --bg-secondary: #121214;
+  --bg-card: #1c1c1e;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --accent: #487d49; /* Pantone Mint Green */
   --accent-light: #162c16;
   --accent-glow: rgba(72, 125, 73, 0.25);
-  --border: #1e293b;
+  --border: #2c2c2e;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.6);

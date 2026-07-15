@@ -1000,22 +1000,6 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             {/* Event specific: Cost Currency & Pricing inputs */}
             {!event.is_task && isPaid && (
               <div className="input-group">
-                <label className="input-label" style={{ textAlign: 'center', display: 'block' }}>Currency</label>
-                <div className="toggle-selector" style={{ marginBottom: '12px' }}>
-                  <div 
-                    className={`toggle-option ${currency === 'USD' ? 'active' : ''}`}
-                    onClick={() => setCurrency('USD')}
-                  >
-                    USD ($)
-                  </div>
-                  <div 
-                    className={`toggle-option ${currency === 'KHR' ? 'active' : ''}`}
-                    onClick={() => setCurrency('KHR')}
-                  >
-                    KHR (៛)
-                  </div>
-                </div>
-
                 <label className="input-label" style={{ textAlign: 'center', display: 'block' }}>Payment Type</label>
                 <div className="toggle-selector" style={{ marginBottom: '12px' }}>
                   <div 
@@ -1029,6 +1013,22 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                     onClick={() => setPaymentType('monthly')}
                   >
                     Monthly
+                  </div>
+                </div>
+
+                <label className="input-label" style={{ textAlign: 'center', display: 'block' }}>Currency</label>
+                <div className="toggle-selector" style={{ marginBottom: '12px' }}>
+                  <div 
+                    className={`toggle-option ${currency === 'USD' ? 'active' : ''}`}
+                    onClick={() => setCurrency('USD')}
+                  >
+                    USD ($)
+                  </div>
+                  <div 
+                    className={`toggle-option ${currency === 'KHR' ? 'active' : ''}`}
+                    onClick={() => setCurrency('KHR')}
+                  >
+                    KHR (៛)
                   </div>
                 </div>
 
