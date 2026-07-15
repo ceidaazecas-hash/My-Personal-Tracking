@@ -20,6 +20,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [currency, setCurrency] = useState('USD');
   const [description, setDescription] = useState('');
   const [customType, setCustomType] = useState('');
+  const [showQuickKmInput, setShowQuickKmInput] = useState(false);
+  const [quickKmValue, setQuickKmValue] = useState('');
 
   // Custom Date/Time States for Edit Mode
   const [editMonth, setEditMonth] = useState(0);
@@ -367,6 +369,47 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       setIsEditing(false);
     } catch (err) {
       setErrorMsg(err.message || 'Failed to update item.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickToggleJoined = async () => {
+    if (event.has_run) {
+      try {
+        setLoading(true);
+        await onUpdateEvent(event.id, {
+          has_run: false,
+          distance_run: 0
+        });
+      } catch (err) {
+        setErrorMsg(err.message || 'Failed to update participation.');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      let initialKm = '';
+      if (event.distance) {
+        const matches = event.distance.match(/(\d+(?:\.\d+)?)/);
+        if (matches) {
+          initialKm = matches[1];
+        }
+      }
+      setQuickKmValue(initialKm);
+      setShowQuickKmInput(true);
+    }
+  };
+
+  const handleSaveQuickJoined = async () => {
+    try {
+      setLoading(true);
+      await onUpdateEvent(event.id, {
+        has_run: true,
+        distance_run: parseFloat(quickKmValue) || 0
+      });
+      setShowQuickKmInput(false);
+    } catch (err) {
+      setErrorMsg(err.message || 'Failed to save participation.');
     } finally {
       setLoading(false);
     }
@@ -1174,6 +1217,29 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
 
             {/* Read-only Actions: Edit & Delete */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '28px' }}>
+              
+              {/* Joined & Ran Quick Action Button (Event only) */}
+              {!event.is_task && (
+                <button
+                  type="button"
+                  className={event.has_run ? "btn-secondary" : "btn-primary"}
+                  style={{
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    backgroundColor: event.has_run ? 'var(--border)' : 'var(--accent)',
+                    color: event.has_run ? 'var(--text-primary)' : '#ffffff',
+                    fontWeight: '700'
+                  }}
+                  onClick={handleQuickToggleJoined}
+                >
+                  <Trophy size={16} />
+                  <span>{event.has_run ? 'Cancel Joined Status' : 'Mark as Joined & Ran'}</span>
+                </button>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <button 
                   type="button" 
@@ -1206,7 +1272,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                     justifyContent: 'center', 
                     gap: '8px',
                     backgroundColor: 'var(--accent)',
-                    color: '#000',
+                    color: '#ffffff',
                     fontWeight: '700'
                   }}
                   onClick={() => setShowShareModal(true)}
@@ -1495,6 +1561,69 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                   }}
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Km Input Modal Popup */}
+        {showQuickKmInput && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px', backdropFilter: 'blur(4px)'
+          }}>
+            <div style={{
+              backgroundColor: 'var(--bg-secondary)',
+              borderRadius: 'var(--radius-md)',
+              width: '100%', maxWidth: '340px',
+              padding: '24px', border: '1px solid var(--border)',
+              boxShadow: 'var(--shadow-lg)',
+              animation: 'fadeIn 0.2s ease-out',
+              textAlign: 'center'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                <span style={{
+                  display: 'flex', padding: '14px', borderRadius: '50%',
+                  backgroundColor: 'var(--accent-glow)', color: 'var(--accent)'
+                }}>
+                  <Trophy size={32} />
+                </span>
+              </div>
+              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Log Your Run</h3>
+              <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', lineHeight: 1.4 }}>
+                Enter the distance in kilometers actually run for <strong>"{event.name}"</strong>:
+              </p>
+              
+              <input
+                type="number"
+                step="any"
+                value={quickKmValue}
+                onChange={(e) => setQuickKmValue(e.target.value)}
+                placeholder="Enter km (e.g. 5, 10.2)"
+                className="text-input"
+                style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}
+                autoFocus
+              />
+              
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  type="button" 
+                  className="btn-secondary" 
+                  style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  onClick={() => setShowQuickKmInput(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-primary" 
+                  style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#ffffff', fontWeight: '700', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                  onClick={handleSaveQuickJoined}
+                >
+                  Save Run
                 </button>
               </div>
             </div>
