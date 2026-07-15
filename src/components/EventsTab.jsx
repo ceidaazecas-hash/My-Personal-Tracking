@@ -17,6 +17,49 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
   const eventDrafts = drafts.filter(item => !item.is_task);
   const now = new Date();
 
+  // Get monthly stats (current calendar month & year)
+  const getMonthlyStats = () => {
+    const today = new Date();
+    const currentMonth = today.getMonth(); // 0-11
+    const currentYear = today.getFullYear();
+
+    // Filter only events (no tasks) belonging to the current month & year
+    const monthlyEvents = events.filter(item => {
+      if (item.is_task) return false;
+      const itemDate = new Date(item.date);
+      return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear;
+    });
+
+    const totalEventsCount = monthlyEvents.length;
+
+    // Sum monthly costs
+    const totalCostUsd = monthlyEvents.reduce((sum, item) => {
+      if (item.is_paid && item.price) {
+        return sum + parseFloat(item.price);
+      }
+      return sum;
+    }, 0);
+
+    // Sum monthly distance (extract floating numbers from text like "5km", "10k", "5.5 miles")
+    const totalDistance = monthlyEvents.reduce((sum, item) => {
+      if (item.distance) {
+        const matches = item.distance.match(/(\d+(?:\.\d+)?)/);
+        if (matches) {
+          return sum + parseFloat(matches[1]);
+        }
+      }
+      return sum;
+    }, 0);
+
+    return {
+      totalEventsCount,
+      totalCostUsd,
+      totalDistance
+    };
+  };
+
+  const { totalEventsCount, totalCostUsd, totalDistance } = getMonthlyStats();
+
   // Helper to format currency pricing USD <-> KHR for read-only modals
   const formatPrice = (priceUSD) => {
     const usd = Number(priceUSD);
@@ -218,6 +261,55 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
   return (
     <div className="events-tab-container">
       
+      {/* Monthly Summary Statistics Grid */}
+      <div className="monthly-stats-card" style={{
+        backgroundColor: 'var(--bg-secondary)',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px 20px',
+        boxShadow: 'var(--shadow-sm)',
+        border: '1px solid var(--border)',
+        marginBottom: '20px',
+        animation: 'fadeIn 0.2s ease-out'
+      }}>
+        <div style={{
+          fontSize: '11px',
+          fontWeight: '800',
+          textTransform: 'uppercase',
+          letterSpacing: '1.5px',
+          color: 'var(--text-secondary)',
+          marginBottom: '12px',
+          textAlign: 'center'
+        }}>
+          {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} Summary
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr',
+          gap: '12px',
+          textAlign: 'center'
+        }}>
+          {/* Total Events */}
+          <div style={{ borderRight: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{totalEventsCount}</div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Events</div>
+          </div>
+          {/* Total Distance */}
+          <div style={{ borderRight: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{totalDistance.toFixed(1).replace(/\.0$/, '')} km</div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Distance</div>
+          </div>
+          {/* Total Cost */}
+          <div>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>
+              ${totalCostUsd.toFixed(2)}
+            </div>
+            <div style={{ fontSize: '9px', fontWeight: '500', color: 'var(--text-secondary)', marginTop: '2px' }}>
+              {(totalCostUsd * 4000).toLocaleString()}៛
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Search and Category Filters */}
       <div className="search-filter-section" style={{ gap: '12px' }}>
         <div className="search-bar">
