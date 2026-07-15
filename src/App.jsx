@@ -430,14 +430,17 @@ export default function App() {
     }
   };
 
-  // Calculate navigations counters
+  // Calculate header and mobile navigation counters (excluding drafts, completed tasks, and past events)
   const getCounts = () => {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(todayStart);
     todayEnd.setDate(todayEnd.getDate() + 1);
 
+    // 1. Daily badge counts only pending (uncompleted) database tasks; drafts are local and excluded.
     const pendingTasks = events.filter(e => e.is_task && !e.is_completed).length;
+    
+    // 2. Events badge counts only today and future upcoming events; past events and local drafts are excluded.
     const upcomingEvents = events.filter(e => !e.is_task && new Date(e.date) >= todayStart).length;
 
     return {
