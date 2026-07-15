@@ -484,7 +484,8 @@ export default function App() {
       const rawPrice = parseFloat(usdPrice);
       if (isNaN(rawPrice) || rawPrice <= 0) return 'Free';
       const khr = Math.round(rawPrice * 4000);
-      return `$${rawPrice.toFixed(2)} / ${khr.toLocaleString()}៛`;
+      const suffix = (sharedEvent && sharedEvent.payment_type === 'monthly') ? '/mo' : '';
+      return `$${rawPrice.toFixed(2)}${suffix} / ${khr.toLocaleString()}៛${suffix}`;
     };
 
     const getMapsUrl = (loc) => {

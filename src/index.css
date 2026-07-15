@@ -164,9 +164,14 @@ body {
 }
 
 .header-nav-btn.active {
-  background-color: var(--accent-glow);
-  color: var(--accent);
+  background-color: var(--accent);
+  color: #ffffff;
   border-color: var(--accent);
+}
+
+.header-nav-btn.active .nav-badge {
+  background-color: #ffffff;
+  color: var(--accent);
 }
 
 .icon-btn {
@@ -1207,10 +1212,6 @@ html.dark select.text-input {
   justify-content: center;
 }
 
-.header-nav-btn.active .nav-badge {
-  background-color: var(--text-primary);
-  color: var(--bg-primary);
-}
 
 .mobile-nav-badge {
   position: absolute;

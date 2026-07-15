@@ -523,9 +523,9 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                         <div className={`price-tag ${event.is_paid ? '' : 'free'}`}>
                           {event.is_paid ? (
                             <>
-                              <div className="price-usd">${Number(event.price).toFixed(2)}</div>
+                              <div className="price-usd">${Number(event.price).toFixed(2)}{event.payment_type === 'monthly' ? '/mo' : ''}</div>
                               <div className="price-khr" style={{ fontSize: '10px', opacity: 0.8, fontWeight: '500' }}>
-                                {(Number(event.price) * 4000).toLocaleString()}៛
+                                {(Number(event.price) * 4000).toLocaleString()}៛{event.payment_type === 'monthly' ? '/mo' : ''}
                               </div>
                             </>
                           ) : (
@@ -592,12 +592,12 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                             )}
                           </div>
                         </div>
-                        <div className="price-tag free">
+                        <div className={`price-tag ${event.is_paid ? '' : 'free'}`}>
                           {event.is_paid ? (
                             <>
-                              <div className="price-usd">${Number(event.price).toFixed(2)}</div>
+                              <div className="price-usd">${Number(event.price).toFixed(2)}{event.payment_type === 'monthly' ? '/mo' : ''}</div>
                               <div className="price-khr" style={{ fontSize: '10px', opacity: 0.8, fontWeight: '500' }}>
-                                {(Number(event.price) * 4000).toLocaleString()}៛
+                                {(Number(event.price) * 4000).toLocaleString()}៛{event.payment_type === 'monthly' ? '/mo' : ''}
                               </div>
                             </>
                           ) : (

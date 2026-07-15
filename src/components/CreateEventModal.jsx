@@ -36,6 +36,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD'); // 'USD' or 'KHR'
+  const [paymentType, setPaymentType] = useState('once'); // 'once' or 'monthly'
 
   // Task specific states
   const [description, setDescription] = useState('');
@@ -74,6 +75,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     setIsPaid(false);
     setPrice('');
     setCurrency('USD');
+    setPaymentType('once');
     setDescription('');
     setTaskType('Work');
     setCustomTaskType('');
@@ -137,6 +139,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
           setOrganization(draftToEdit.organization || '');
           setIsPaid(draftToEdit.is_paid || false);
           setPrice(draftToEdit.price || '');
+          setPaymentType(draftToEdit.payment_type || 'once');
         } else {
           const taskTypesList = ['Food', 'Work', 'Workout', 'Running'];
           if (taskTypesList.includes(draftToEdit.type)) {
@@ -254,6 +257,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       organization: mode === 'event' ? organization.trim() : '',
       is_paid: mode === 'event' ? isPaid : false,
       price: mode === 'event' ? price : '',
+      payment_type: mode === 'event' ? paymentType : 'once',
       description: mode === 'task' ? description.trim() : '',
       is_draft: true
     };
@@ -431,6 +435,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
         itemData.price = isPaid 
           ? (currency === 'KHR' ? rawPrice / 4000 : rawPrice) 
           : 0.00;
+        itemData.payment_type = isPaid ? paymentType : 'once';
         itemData.is_completed = false;
         itemData.description = '';
       } else {
@@ -441,6 +446,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
         itemData.distance_run = 0;
         itemData.is_paid = false;
         itemData.price = 0.00;
+        itemData.payment_type = 'once';
         itemData.is_completed = false;
         itemData.description = description.trim();
       }
@@ -1023,6 +1029,22 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                     onClick={() => setCurrency('KHR')}
                   >
                     KHR (៛)
+                  </div>
+                </div>
+
+                <label className="input-label" style={{ textAlign: 'center', display: 'block' }}>Payment Type</label>
+                <div className="toggle-selector" style={{ marginBottom: '12px' }}>
+                  <div 
+                    className={`toggle-option ${paymentType === 'once' ? 'active' : ''}`}
+                    onClick={() => setPaymentType('once')}
+                  >
+                    One-time
+                  </div>
+                  <div 
+                    className={`toggle-option ${paymentType === 'monthly' ? 'active' : ''}`}
+                    onClick={() => setPaymentType('monthly')}
+                  >
+                    Monthly
                   </div>
                 </div>
 

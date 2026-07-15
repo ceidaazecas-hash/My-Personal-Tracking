@@ -18,6 +18,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD');
+  const [paymentType, setPaymentType] = useState('once'); // 'once' or 'monthly'
   const [description, setDescription] = useState('');
   const [customType, setCustomType] = useState('');
   const [showQuickKmInput, setShowQuickKmInput] = useState(false);
@@ -65,6 +66,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       setOrganization(event.organization || '');
       setIsPaid(event.is_paid || false);
       setPrice(event.price ? String(event.price) : '');
+      setPaymentType(event.payment_type || 'once');
       setCurrency('USD'); // Default to editing in USD normalized
       setDescription(event.description || '');
 
@@ -168,7 +170,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const formatPrice = (priceUSD) => {
     const usd = Number(priceUSD);
     const khr = usd * 4000;
-    return `$${usd.toFixed(2)} / ${khr.toLocaleString()}៛`;
+    const suffix = (event && event.payment_type === 'monthly') ? '/mo' : '';
+    return `$${usd.toFixed(2)}${suffix} / ${khr.toLocaleString()}៛${suffix}`;
   };
 
   const formatDate = (dateStr) => {
@@ -357,11 +360,13 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
         updatedData.price = isPaid 
           ? (currency === 'KHR' ? rawPrice / 4000 : rawPrice) 
           : 0.00;
+        updatedData.payment_type = isPaid ? paymentType : 'once';
       } else {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Task') : type;
         updatedData.distance = '';
         updatedData.has_run = false;
         updatedData.distance_run = 0;
+        updatedData.payment_type = 'once';
         updatedData.description = description.trim();
       }
 
@@ -1011,6 +1016,22 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                   </div>
                 </div>
 
+                <label className="input-label" style={{ textAlign: 'center', display: 'block' }}>Payment Type</label>
+                <div className="toggle-selector" style={{ marginBottom: '12px' }}>
+                  <div 
+                    className={`toggle-option ${paymentType === 'once' ? 'active' : ''}`}
+                    onClick={() => setPaymentType('once')}
+                  >
+                    One-time
+                  </div>
+                  <div 
+                    className={`toggle-option ${paymentType === 'monthly' ? 'active' : ''}`}
+                    onClick={() => setPaymentType('monthly')}
+                  >
+                    Monthly
+                  </div>
+                </div>
+
                 <label className="input-label">Price ({currency === 'USD' ? '$' : '៛'})</label>
                 <input
                   type="number"
@@ -1270,10 +1291,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'center', 
-                    gap: '8px',
-                    backgroundColor: 'var(--accent)',
-                    color: '#ffffff',
-                    fontWeight: '700'
+                    gap: '8px'
                   }}
                   onClick={() => setShowShareModal(true)}
                 >
