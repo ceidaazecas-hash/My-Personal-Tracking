@@ -30,6 +30,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
   const [type, setType] = useState('Run');
   const [customEventType, setCustomEventType] = useState('');
   const [location, setLocation] = useState('');
+  const [distance, setDistance] = useState('');
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD'); // 'USD' or 'KHR'
@@ -65,6 +66,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     setType('Run');
     setCustomEventType('');
     setLocation('');
+    setDistance('');
     setIsPaid(false);
     setPrice('');
     setCurrency('USD');
@@ -125,6 +127,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             setCustomEventType(draftToEdit.type || '');
           }
           setLocation(draftToEdit.location || '');
+          setDistance(draftToEdit.distance || '');
           setOrganization(draftToEdit.organization || '');
           setIsPaid(draftToEdit.is_paid || false);
           setPrice(draftToEdit.price || '');
@@ -239,6 +242,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       end_date: endIso,
       type: mode === 'event' ? (type === 'Other' ? customEventType : type) : (taskType === 'Other' ? customTaskType : taskType),
       location: mode === 'event' ? location.trim() : '',
+      distance: mode === 'event' ? distance.trim() : '',
       organization: mode === 'event' ? organization.trim() : '',
       is_paid: mode === 'event' ? isPaid : false,
       price: mode === 'event' ? price : '',
@@ -410,6 +414,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       if (mode === 'event') {
         itemData.type = type === 'Other' ? (customEventType.trim() || 'Other') : type;
         itemData.location = location.trim();
+        itemData.distance = distance.trim();
         itemData.organization = organization.trim();
         itemData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
@@ -421,6 +426,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       } else {
         itemData.type = taskType === 'Other' ? (customTaskType.trim() || 'Task') : taskType;
         itemData.location = '';
+        itemData.distance = '';
         itemData.is_paid = false;
         itemData.price = 0.00;
         itemData.is_completed = false;
@@ -909,6 +915,23 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                   className="text-input"
                   style={{ textAlign: 'center' }}
                   required
+                  disabled={loading}
+                />
+              </div>
+            )}
+
+            {/* Event-specific: Distance */}
+            {mode === 'event' && (
+              <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
+                <label className="input-label" htmlFor="event-distance">Distance</label>
+                <input
+                  id="event-distance"
+                  type="text"
+                  placeholder="Enter distance (e.g. 5km, 10km) (optional)"
+                  value={distance}
+                  onChange={(e) => setDistance(e.target.value)}
+                  className="text-input"
+                  style={{ textAlign: 'center' }}
                   disabled={loading}
                 />
               </div>

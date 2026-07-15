@@ -337,6 +337,12 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                           </span>
                         </span>
                       )}
+                      {draft.distance && (
+                        <span className="meta-item" style={{ marginTop: '2px' }}>
+                          <Activity size={12} />
+                          <span>{draft.distance}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -424,6 +430,12 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                               <MapPin size={12} style={{ color: 'var(--accent)' }} />
                               <span>{event.location.includes('http') ? 'Google Maps' : event.location}</span>
                             </span>
+                            {event.distance && (
+                              <span className="meta-item" style={{ marginTop: '2px' }}>
+                                <Activity size={12} style={{ color: 'var(--accent)' }} />
+                                <span>{event.distance}</span>
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className={`price-tag ${event.is_paid ? '' : 'free'}`}>
@@ -490,6 +502,12 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                               <MapPin size={12} />
                               <span>{event.location ? (event.location.includes('http') ? 'Google Maps' : event.location) : 'No Location'}</span>
                             </span>
+                            {event.distance && (
+                              <span className="meta-item" style={{ marginTop: '2px' }}>
+                                <Activity size={12} />
+                                <span>{event.distance}</span>
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div className="price-tag free">
@@ -560,6 +578,12 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                             <MapPin size={12} style={{ color: isPast ? 'var(--text-secondary)' : 'var(--accent)' }} />
                             <span>{event.location ? (event.location.includes('http') ? 'Google Maps' : event.location) : 'No Location'}</span>
                           </span>
+                          {event.distance && (
+                            <span className="meta-item" style={{ marginTop: '2px' }}>
+                              <Activity size={12} style={{ color: isPast ? 'var(--text-secondary)' : 'var(--accent)' }} />
+                              <span>{event.distance}</span>
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className={`price-tag ${event.is_paid ? '' : 'free'}`}>

@@ -11,6 +11,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [name, setName] = useState('');
   const [type, setType] = useState('Run');
   const [location, setLocation] = useState('');
+  const [distance, setDistance] = useState('');
   const [organization, setOrganization] = useState('');
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
@@ -54,6 +55,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
     if (event) {
       setName(event.name || '');
       setLocation(event.location || '');
+      setDistance(event.distance || '');
       setOrganization(event.organization || '');
       setIsPaid(event.is_paid || false);
       setPrice(event.price ? String(event.price) : '');
@@ -340,6 +342,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       if (!event.is_task) {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Other') : type;
         updatedData.location = location.trim();
+        updatedData.distance = distance.trim();
         updatedData.organization = organization.trim();
         updatedData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
@@ -348,6 +351,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
           : 0.00;
       } else {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Task') : type;
+        updatedData.distance = '';
         updatedData.description = description.trim();
       }
 
@@ -864,6 +868,22 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               </div>
             )}
 
+            {/* Event specific: Distance */}
+            {!event.is_task && (
+              <div className="input-group">
+                <label className="input-label">Distance</label>
+                <input
+                  type="text"
+                  value={distance}
+                  onChange={(e) => setDistance(e.target.value)}
+                  className="text-input"
+                  style={{ textAlign: 'center' }}
+                  placeholder="Enter distance (e.g. 5km, 10km) (optional)"
+                  disabled={loading}
+                />
+              </div>
+            )}
+
             {/* Event specific: Cost Selector */}
             {!event.is_task && (
               <div className="input-group">
@@ -1008,6 +1028,17 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                       <MapPin size={16} />
                       <span>Open in Google Maps</span>
                     </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Distance (Event only, if set) */}
+              {!event.is_task && event.distance && (
+                <div className="detail-item">
+                  <span className="detail-label-icon"><Activity size={20} /></span>
+                  <div className="detail-content">
+                    <span className="detail-label">Distance</span>
+                    <span className="detail-val">{event.distance}</span>
                   </div>
                 </div>
               )}

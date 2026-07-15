@@ -5,9 +5,9 @@
   --bg-card: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
-  --accent: #047857; /* Emerald 700 */
-  --accent-light: #d1fae5; /* Emerald 100 */
-  --accent-glow: rgba(4, 120, 87, 0.08);
+  --accent: #487d49; /* Pantone Mint Green */
+  --accent-light: #dceddd;
+  --accent-glow: rgba(72, 125, 73, 0.08);
   --border: #e2e8f0;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
@@ -26,9 +26,9 @@ html.dark {
   --bg-card: #121212;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --accent: #00ff66; /* Vibrant Neon Cyber Green */
-  --accent-light: #003314;
-  --accent-glow: rgba(0, 255, 102, 0.15);
+  --accent: #5e9d5f; /* Pantone Mint Green optimized for dark contrast */
+  --accent-light: #162c16;
+  --accent-glow: rgba(94, 157, 95, 0.15);
   --border: #1e293b;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
@@ -632,7 +632,7 @@ html.dark .filter-chip.active {
 /* Inline Price Tag: Fixes Absolute Position weird sizes and overlap */
 .price-tag {
   background-color: var(--accent-light);
-  color: #047857;
+  color: var(--accent);
   font-weight: 700;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
