@@ -288,7 +288,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
           {/* Events Run */}
           <div style={{ borderRight: '1px solid var(--border)' }}>
             <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{eventsJoinedCount}</div>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Events Run</div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Event Joined</div>
           </div>
           {/* Total Km Run */}
           <div>

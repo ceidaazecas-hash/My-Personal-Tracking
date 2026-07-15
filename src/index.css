@@ -1209,6 +1209,7 @@ html.dark select.text-input {
 
 .header-nav-btn.active .nav-badge {
   background-color: var(--text-primary);
+  color: var(--bg-primary);
 }
 
 .mobile-nav-badge {
