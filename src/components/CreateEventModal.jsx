@@ -31,6 +31,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
   const [customEventType, setCustomEventType] = useState('');
   const [location, setLocation] = useState('');
   const [distance, setDistance] = useState('');
+  const [hasRun, setHasRun] = useState(false);
+  const [distanceRun, setDistanceRun] = useState('');
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
   const [currency, setCurrency] = useState('USD'); // 'USD' or 'KHR'
@@ -67,6 +69,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     setCustomEventType('');
     setLocation('');
     setDistance('');
+    setHasRun(false);
+    setDistanceRun('');
     setIsPaid(false);
     setPrice('');
     setCurrency('USD');
@@ -128,6 +132,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
           }
           setLocation(draftToEdit.location || '');
           setDistance(draftToEdit.distance || '');
+          setHasRun(draftToEdit.has_run || false);
+          setDistanceRun(draftToEdit.distance_run ? String(draftToEdit.distance_run) : '');
           setOrganization(draftToEdit.organization || '');
           setIsPaid(draftToEdit.is_paid || false);
           setPrice(draftToEdit.price || '');
@@ -243,6 +249,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       type: mode === 'event' ? (type === 'Other' ? customEventType : type) : (taskType === 'Other' ? customTaskType : taskType),
       location: mode === 'event' ? location.trim() : '',
       distance: mode === 'event' ? distance.trim() : '',
+      has_run: mode === 'event' ? hasRun : false,
+      distance_run: mode === 'event' ? distanceRun : '',
       organization: mode === 'event' ? organization.trim() : '',
       is_paid: mode === 'event' ? isPaid : false,
       price: mode === 'event' ? price : '',
@@ -415,6 +423,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
         itemData.type = type === 'Other' ? (customEventType.trim() || 'Other') : type;
         itemData.location = location.trim();
         itemData.distance = distance.trim();
+        itemData.has_run = hasRun;
+        itemData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
         itemData.organization = organization.trim();
         itemData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
@@ -427,6 +437,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
         itemData.type = taskType === 'Other' ? (customTaskType.trim() || 'Task') : taskType;
         itemData.location = '';
         itemData.distance = '';
+        itemData.has_run = false;
+        itemData.distance_run = 0;
         itemData.is_paid = false;
         itemData.price = 0.00;
         itemData.is_completed = false;
@@ -934,6 +946,43 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                   style={{ textAlign: 'center' }}
                   disabled={loading}
                 />
+              </div>
+            )}
+
+            {/* Event-specific: Joined and Run */}
+            {mode === 'event' && (
+              <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)', animation: 'fadeIn 0.2s ease-out' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span className="input-label" style={{ margin: 0, fontWeight: '700' }}>I joined & ran this event</span>
+                  <label className="toggle-switch-container">
+                    <input
+                      type="checkbox"
+                      checked={hasRun}
+                      onChange={(e) => {
+                        setHasRun(e.target.checked);
+                        if (!e.target.checked) setDistanceRun('');
+                      }}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+                {hasRun && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px', animation: 'fadeIn 0.2s ease-out' }}>
+                    <label className="input-label" htmlFor="event-distance-run" style={{ textAlign: 'left', display: 'block' }}>How many Km did you run?</label>
+                    <input
+                      id="event-distance-run"
+                      type="number"
+                      step="any"
+                      placeholder="Enter actual km run (e.g. 5, 10.2)"
+                      value={distanceRun}
+                      onChange={(e) => setDistanceRun(e.target.value)}
+                      className="text-input"
+                      style={{ textAlign: 'center' }}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                )}
               </div>
             )}
 

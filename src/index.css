@@ -26,9 +26,9 @@ html.dark {
   --bg-card: #121212;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --accent: #5e9d5f; /* Pantone Mint Green optimized for dark contrast */
+  --accent: #487d49; /* Pantone Mint Green */
   --accent-light: #162c16;
-  --accent-glow: rgba(94, 157, 95, 0.15);
+  --accent-glow: rgba(72, 125, 73, 0.25);
   --border: #1e293b;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
@@ -273,7 +273,7 @@ body {
 }
 
 html.dark .add-event-fab {
-  color: #000000; /* Neon green contrast */
+  color: #ffffff;
 }
 
 .add-event-fab:hover {
@@ -379,7 +379,7 @@ html.dark .add-event-fab {
 }
 
 html.dark .btn-primary {
-  color: #000000;
+  color: #ffffff;
 }
 
 .btn-primary:hover {
@@ -506,7 +506,7 @@ html.dark .btn-primary {
 }
 
 html.dark .filter-chip.active {
-  color: #000000;
+  color: #ffffff;
 }
 
 /* Section Header */
@@ -648,8 +648,8 @@ html.dark .filter-chip.active {
 }
 
 html.dark .price-tag {
-  background-color: rgba(0, 255, 102, 0.15);
-  color: #00ff66;
+  background-color: var(--accent-glow);
+  color: var(--accent);
 }
 
 .price-tag.free {

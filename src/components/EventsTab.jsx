@@ -32,33 +32,25 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
 
     const totalEventsCount = monthlyEvents.length;
 
-    // Sum monthly costs
-    const totalCostUsd = monthlyEvents.reduce((sum, item) => {
-      if (item.is_paid && item.price) {
-        return sum + parseFloat(item.price);
-      }
-      return sum;
-    }, 0);
+    // Count events joined & run
+    const eventsJoinedCount = monthlyEvents.filter(item => item.has_run).length;
 
-    // Sum monthly distance (extract floating numbers from text like "5km", "10k", "5.5 miles")
-    const totalDistance = monthlyEvents.reduce((sum, item) => {
-      if (item.distance) {
-        const matches = item.distance.match(/(\d+(?:\.\d+)?)/);
-        if (matches) {
-          return sum + parseFloat(matches[1]);
-        }
+    // Sum monthly km run (from distance_run column)
+    const totalKmRun = monthlyEvents.reduce((sum, item) => {
+      if (item.has_run && item.distance_run) {
+        return sum + parseFloat(item.distance_run);
       }
       return sum;
     }, 0);
 
     return {
       totalEventsCount,
-      totalCostUsd,
-      totalDistance
+      eventsJoinedCount,
+      totalKmRun
     };
   };
 
-  const { totalEventsCount, totalCostUsd, totalDistance } = getMonthlyStats();
+  const { totalEventsCount, eventsJoinedCount, totalKmRun } = getMonthlyStats();
 
   // Helper to format currency pricing USD <-> KHR for read-only modals
   const formatPrice = (priceUSD) => {
@@ -291,21 +283,19 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
           {/* Total Events */}
           <div style={{ borderRight: '1px solid var(--border)' }}>
             <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{totalEventsCount}</div>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Events</div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Total Events</div>
           </div>
-          {/* Total Distance */}
+          {/* Events Run */}
           <div style={{ borderRight: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{totalDistance.toFixed(1).replace(/\.0$/, '')} km</div>
-            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Distance</div>
+            <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>{eventsJoinedCount}</div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Events Run</div>
           </div>
-          {/* Total Cost */}
+          {/* Total Km Run */}
           <div>
             <div style={{ fontSize: '20px', fontWeight: '800', color: 'var(--accent)' }}>
-              ${totalCostUsd.toFixed(2)}
+              {totalKmRun.toFixed(1).replace(/\.0$/, '')} km
             </div>
-            <div style={{ fontSize: '9px', fontWeight: '500', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              {(totalCostUsd * 4000).toLocaleString()}៛
-            </div>
+            <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', marginTop: '2px' }}>Total Km Run</div>
           </div>
         </div>
       </div>

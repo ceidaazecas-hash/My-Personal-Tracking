@@ -12,6 +12,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [type, setType] = useState('Run');
   const [location, setLocation] = useState('');
   const [distance, setDistance] = useState('');
+  const [hasRun, setHasRun] = useState(false);
+  const [distanceRun, setDistanceRun] = useState('');
   const [organization, setOrganization] = useState('');
   const [isPaid, setIsPaid] = useState(false);
   const [price, setPrice] = useState('');
@@ -56,6 +58,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       setName(event.name || '');
       setLocation(event.location || '');
       setDistance(event.distance || '');
+      setHasRun(event.has_run || false);
+      setDistanceRun(event.distance_run ? String(event.distance_run) : '');
       setOrganization(event.organization || '');
       setIsPaid(event.is_paid || false);
       setPrice(event.price ? String(event.price) : '');
@@ -343,6 +347,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
         updatedData.type = type === 'Other' ? (customType.trim() || 'Other') : type;
         updatedData.location = location.trim();
         updatedData.distance = distance.trim();
+        updatedData.has_run = hasRun;
+        updatedData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
         updatedData.organization = organization.trim();
         updatedData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
@@ -352,6 +358,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       } else {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Task') : type;
         updatedData.distance = '';
+        updatedData.has_run = false;
+        updatedData.distance_run = 0;
         updatedData.description = description.trim();
       }
 
@@ -884,6 +892,42 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               </div>
             )}
 
+            {/* Event specific: Joined and Run */}
+            {!event.is_task && (
+              <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)', animation: 'fadeIn 0.2s ease-out' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span className="input-label" style={{ margin: 0, fontWeight: '700' }}>I joined & ran this event</span>
+                  <label className="toggle-switch-container">
+                    <input
+                      type="checkbox"
+                      checked={hasRun}
+                      onChange={(e) => {
+                        setHasRun(e.target.checked);
+                        if (!e.target.checked) setDistanceRun('');
+                      }}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+                {hasRun && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px', animation: 'fadeIn 0.2s ease-out' }}>
+                    <label className="input-label" style={{ textAlign: 'left', display: 'block' }}>How many Km did you run?</label>
+                    <input
+                      type="number"
+                      step="any"
+                      placeholder="Enter actual km run (e.g. 5, 10.2)"
+                      value={distanceRun}
+                      onChange={(e) => setDistanceRun(e.target.value)}
+                      className="text-input"
+                      style={{ textAlign: 'center' }}
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Event specific: Cost Selector */}
             {!event.is_task && (
               <div className="input-group">
@@ -1039,6 +1083,19 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                   <div className="detail-content">
                     <span className="detail-label">Distance</span>
                     <span className="detail-val">{event.distance}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Joined & Ran Details (Event only) */}
+              {!event.is_task && event.has_run && (
+                <div className="detail-item">
+                  <span className="detail-label-icon"><Trophy size={20} style={{ color: 'var(--accent)' }} /></span>
+                  <div className="detail-content">
+                    <span className="detail-label">Participation Status</span>
+                    <span className="detail-val" style={{ color: 'var(--accent)', fontWeight: '800' }}>
+                      Joined & Ran ({event.distance_run} km)
+                    </span>
                   </div>
                 </div>
               )}
