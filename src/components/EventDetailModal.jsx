@@ -88,7 +88,12 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
     if (event) {
       setName(event.name || '');
       setLocation(event.location || '');
-      setDistance(event.distance || '');
+      const cleanDistance = (distStr) => {
+        if (!distStr) return '';
+        const match = distStr.match(/(\d+(?:\.\d+)?)/);
+        return match ? match[1] : '';
+      };
+      setDistance(cleanDistance(event.distance || ''));
       setHasRun(event.has_run || false);
       setDistanceRun(event.distance_run ? String(event.distance_run) : '');
       setOrganization(event.organization || '');
@@ -380,7 +385,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       if (!event.is_task) {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Other') : type;
         updatedData.location = location.trim();
-        updatedData.distance = distance.trim();
+        updatedData.distance = distance ? `${distance.trim()} KM` : '';
         updatedData.has_run = hasRun;
         updatedData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
         updatedData.organization = organization.trim();
@@ -687,16 +692,17 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               />
             </div>
 
-            {/* Event specific: Organization (Optional) */}
+            {/* Event specific: Organization */}
             {!event.is_task && (
               <div className="input-group">
-                <label className="input-label">Organization (Optional)</label>
+                <label className="input-label">Organization</label>
                 <input
                   type="text"
                   value={organization}
                   onChange={(e) => setOrganization(e.target.value)}
                   className="text-input"
                   style={{ textAlign: 'center' }}
+                  required
                   disabled={loading}
                 />
               </div>
@@ -1053,17 +1059,19 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               </div>
             )}
 
-            {/* Event specific: Distance */}
+            {/* Event specific: Distance (KM) */}
             {!event.is_task && (
               <div className="input-group">
-                <label className="input-label">Distance</label>
+                <label className="input-label">Distance (KM)</label>
                 <input
-                  type="text"
+                  type="number"
+                  step="any"
                   value={distance}
                   onChange={(e) => setDistance(e.target.value)}
                   className="text-input"
                   style={{ textAlign: 'center' }}
-                  placeholder="Enter distance (e.g. 5km, 10km) (optional)"
+                  placeholder="e.g. 5, 10"
+                  required
                   disabled={loading}
                 />
               </div>

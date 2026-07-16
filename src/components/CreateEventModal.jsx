@@ -133,7 +133,12 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             setCustomEventType(draftToEdit.type || '');
           }
           setLocation(draftToEdit.location || '');
-          setDistance(draftToEdit.distance || '');
+          const cleanDistance = (distStr) => {
+            if (!distStr) return '';
+            const match = distStr.match(/(\d+(?:\.\d+)?)/);
+            return match ? match[1] : '';
+          };
+          setDistance(cleanDistance(draftToEdit.distance || ''));
           setHasRun(draftToEdit.has_run || false);
           setDistanceRun(draftToEdit.distance_run ? String(draftToEdit.distance_run) : '');
           setOrganization(draftToEdit.organization || '');
@@ -251,7 +256,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       end_date: endIso,
       type: mode === 'event' ? (type === 'Other' ? customEventType : type) : (taskType === 'Other' ? customTaskType : taskType),
       location: mode === 'event' ? location.trim() : '',
-      distance: mode === 'event' ? distance.trim() : '',
+      distance: mode === 'event' && distance ? `${distance.trim()} KM` : '',
       has_run: mode === 'event' ? hasRun : false,
       distance_run: mode === 'event' ? distanceRun : '',
       organization: mode === 'event' ? organization.trim() : '',
@@ -426,7 +431,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       if (mode === 'event') {
         itemData.type = type === 'Other' ? (customEventType.trim() || 'Other') : type;
         itemData.location = location.trim();
-        itemData.distance = distance.trim();
+        itemData.distance = distance ? `${distance.trim()} KM` : '';
         itemData.has_run = hasRun;
         itemData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
         itemData.organization = organization.trim();
@@ -568,11 +573,11 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
               />
             </div>
 
-            {/* Event-specific: Organization Name (Optional) */}
+            {/* Event-specific: Organization Name */}
             {mode === 'event' && (
               <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                 <label className="input-label" htmlFor="event-organization">
-                  Organization (Optional)
+                  Organization
                 </label>
                 <input
                   id="event-organization"
@@ -582,6 +587,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
                   onChange={(e) => setOrganization(e.target.value)}
                   className="text-input"
                   style={{ textAlign: 'center' }}
+                  required
                   disabled={loading}
                 />
               </div>
@@ -958,18 +964,20 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
               </div>
             )}
 
-            {/* Event-specific: Distance */}
+            {/* Event-specific: Distance (KM) */}
             {mode === 'event' && (
               <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-                <label className="input-label" htmlFor="event-distance">Distance</label>
+                <label className="input-label" htmlFor="event-distance">Distance (KM)</label>
                 <input
                   id="event-distance"
-                  type="text"
-                  placeholder="Enter distance (e.g. 5km, 10km) (optional)"
+                  type="number"
+                  step="any"
+                  placeholder="e.g. 5, 10"
                   value={distance}
                   onChange={(e) => setDistance(e.target.value)}
                   className="text-input"
                   style={{ textAlign: 'center' }}
+                  required
                   disabled={loading}
                 />
               </div>
