@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import GatekeeperLock from './components/GatekeeperLock';
-import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText, X } from 'lucide-react';
+import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -39,10 +39,39 @@ export default function App() {
 
   // Share view states
   const [isShareView, setIsShareView] = useState(false);
-  const [lightboxImg, setLightboxImg] = useState(null);
+  const [lightboxImages, setLightboxImages] = useState([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(0);
+  const [touchEndX, setTouchEndX] = useState(0);
   const [sharedEvent, setSharedEvent] = useState(null);
   const [sharedEventLoading, setSharedEventLoading] = useState(false);
   const [sharedEventError, setSharedEventError] = useState('');
+
+  const handleViewImage = (url, list = []) => {
+    const listArray = list.length > 0 ? list : [url];
+    setLightboxImages(listArray);
+    const index = listArray.indexOf(url);
+    setLightboxIndex(index !== -1 ? index : 0);
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (lightboxImages.length === 0) return;
+      if (e.key === 'ArrowLeft') {
+        if (lightboxImages.length > 1) {
+          setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+        }
+      } else if (e.key === 'ArrowRight') {
+        if (lightboxImages.length > 1) {
+          setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+        }
+      } else if (e.key === 'Escape') {
+        setLightboxImages([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxImages]);
 
   // 1. Initial Gatekeeper Lock Check, Load Events & Fetch Site Password
   useEffect(() => {
@@ -727,7 +756,7 @@ export default function App() {
                                   cursor: 'pointer',
                                   transition: 'transform 0.2s',
                                 }}
-                                onClick={() => setLightboxImg(imgUrl)}
+                                onClick={() => handleViewImage(imgUrl, images)}
                               />
                             ))}
                           </div>
@@ -978,42 +1007,108 @@ export default function App() {
         onDeleteEvent={handleDeleteEvent}
         onUpdateEvent={handleUpdateEvent}
         onMoveTaskToToday={handleMoveTaskToToday}
-        onViewImage={setLightboxImg}
+        onViewImage={handleViewImage}
       />
       {/* Fullscreen Lightbox Overlay */}
-      {lightboxImg && (
-        <div 
-          style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            backgroundColor: 'rgba(0,0,0,0.9)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '16px', animation: 'fadeIn 0.2s ease-out'
-          }}
-          onClick={() => setLightboxImg(null)}
-        >
-          <button 
-            type="button"
-            onClick={() => setLightboxImg(null)}
+      {lightboxImages.length > 0 && (() => {
+        const activeImg = lightboxImages[lightboxIndex];
+        return (
+          <div 
             style={{
-              position: 'absolute', top: '24px', right: '24px',
-              backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
-              width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', cursor: 'pointer'
+              position: 'fixed', inset: 0, zIndex: 10000,
+              backgroundColor: 'rgba(0,0,0,0.9)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '16px', animation: 'fadeIn 0.2s ease-out'
+            }}
+            onClick={() => setLightboxImages([])}
+            onTouchStart={(e) => setTouchStartX(e.targetTouches[0].clientX)}
+            onTouchMove={(e) => setTouchEndX(e.targetTouches[0].clientX)}
+            onTouchEnd={() => {
+              if (!touchStartX || !touchEndX) return;
+              const diff = touchStartX - touchEndX;
+              const swipeThreshold = 40;
+              if (diff > swipeThreshold) {
+                if (lightboxImages.length > 1) {
+                  setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+                }
+              } else if (diff < -swipeThreshold) {
+                if (lightboxImages.length > 1) {
+                  setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+                }
+              }
+              setTouchStartX(0);
+              setTouchEndX(0);
             }}
           >
-            <X size={24} />
-          </button>
-          <img 
-            src={lightboxImg} 
-            alt="Fullscreen view" 
-            style={{ 
-              maxWidth: '100%', maxHeight: '90vh', 
-              borderRadius: '8px', objectFit: 'contain',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-            }} 
-          />
-        </div>
-      )}
+            <button 
+              type="button"
+              onClick={() => setLightboxImages([])}
+              style={{
+                position: 'absolute', top: '24px', right: '24px',
+                backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
+                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', cursor: 'pointer', zIndex: 10002
+              }}
+            >
+              <X size={24} />
+            </button>
+
+            {/* Left Nav Button */}
+            {lightboxImages.length > 1 && (
+              <button 
+                type="button" 
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length); }}
+                style={{
+                  position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
+                  backgroundColor: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', cursor: 'pointer', zIndex: 10001
+                }}
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
+
+            <img 
+              src={activeImg} 
+              alt={`Fullscreen view ${lightboxIndex + 1}`} 
+              style={{ 
+                maxWidth: '100%', maxHeight: '90vh', 
+                borderRadius: '8px', objectFit: 'contain',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                userSelect: 'none'
+              }} 
+            />
+
+            {/* Right Nav Button */}
+            {lightboxImages.length > 1 && (
+              <button 
+                type="button" 
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex((prev) => (prev + 1) % lightboxImages.length); }}
+                style={{
+                  position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
+                  backgroundColor: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', cursor: 'pointer', zIndex: 10001
+                }}
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
+
+            {/* Slider Indicator Badge */}
+            {lightboxImages.length > 1 && (
+              <span style={{
+                position: 'absolute', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+                color: '#fff', fontSize: '13px', fontWeight: '700', letterSpacing: '0.5px',
+                backgroundColor: 'rgba(0,0,0,0.6)', padding: '6px 12px', borderRadius: '16px'
+              }}>
+                {lightboxIndex + 1} / {lightboxImages.length}
+              </span>
+            )}
+          </div>
+        );
+      })()}
     </>
   );
 }

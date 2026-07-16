@@ -1350,7 +1350,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s',
                               }}
-                              onClick={() => onViewImage(imgUrl)}
+                              onClick={() => onViewImage(imgUrl, images)}
                             />
                           ))}
                         </div>
