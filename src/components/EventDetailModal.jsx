@@ -23,6 +23,10 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [customType, setCustomType] = useState('');
   const [showQuickKmInput, setShowQuickKmInput] = useState(false);
   const [quickKmValue, setQuickKmValue] = useState('');
+  const [quickPhotos, setQuickPhotos] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState(null);
+  const [editJoinedImages, setEditJoinedImages] = useState([]);
 
   // Custom Date/Time States for Edit Mode
   const [editMonth, setEditMonth] = useState(0);
@@ -69,6 +73,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       setPaymentType(event.payment_type || 'once');
       setCurrency('USD'); // Default to editing in USD normalized
       setDescription(event.description || '');
+      setEditJoinedImages(event.joined_images || []);
 
       const taskTypesList = ['Food', 'Work', 'Workout', 'Running'];
       const eventTypesList = ['Run', 'Sport', 'Meeting', 'Birthday', 'Festival'];
@@ -361,6 +366,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
           ? (currency === 'KHR' ? rawPrice / 4000 : rawPrice) 
           : 0.00;
         updatedData.payment_type = isPaid ? paymentType : 'once';
+        updatedData.joined_images = editJoinedImages;
       } else {
         updatedData.type = type === 'Other' ? (customType.trim() || 'Task') : type;
         updatedData.distance = '';
@@ -379,13 +385,87 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
     }
   };
 
+  const compressImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_SIZE = 800;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoUploadChange = async (e) => {
+    const files = Array.from(e.target.files);
+    const remainingSlots = 3 - quickPhotos.length;
+    const filesToUpload = files.slice(0, remainingSlots);
+    if (filesToUpload.length === 0) return;
+    
+    setUploadProgress(true);
+    const compressedList = [];
+    for (const file of filesToUpload) {
+      try {
+        const compressed = await compressImage(file);
+        compressedList.push(compressed);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    setQuickPhotos(prev => [...prev, ...compressedList]);
+    setUploadProgress(false);
+  };
+
+  const handleEditPhotoUploadChange = async (e) => {
+    const files = Array.from(e.target.files);
+    const remainingSlots = 3 - editJoinedImages.length;
+    const filesToUpload = files.slice(0, remainingSlots);
+    if (filesToUpload.length === 0) return;
+    
+    setUploadProgress(true);
+    const compressedList = [];
+    for (const file of filesToUpload) {
+      try {
+        const compressed = await compressImage(file);
+        compressedList.push(compressed);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    setEditJoinedImages(prev => [...prev, ...compressedList]);
+    setUploadProgress(false);
+  };
+
   const handleQuickToggleJoined = async () => {
     if (event.has_run) {
       try {
         setLoading(true);
         await onUpdateEvent(event.id, {
           has_run: false,
-          distance_run: 0
+          distance_run: 0,
+          joined_images: []
         });
       } catch (err) {
         setErrorMsg(err.message || 'Failed to update participation.');
@@ -394,40 +474,30 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       }
     } else {
       const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
-      if (isRunRelated) {
-        let initialKm = '';
-        if (event.distance) {
-          const matches = event.distance.match(/(\d+(?:\.\d+)?)/);
-          if (matches) {
-            initialKm = matches[1];
-          }
-        }
-        setQuickKmValue(initialKm);
-        setShowQuickKmInput(true);
-      } else {
-        try {
-          setLoading(true);
-          await onUpdateEvent(event.id, {
-            has_run: true,
-            distance_run: 0
-          });
-        } catch (err) {
-          setErrorMsg(err.message || 'Failed to update participation.');
-        } finally {
-          setLoading(false);
+      let initialKm = '';
+      if (isRunRelated && event.distance) {
+        const matches = event.distance.match(/(\d+(?:\.\d+)?)/);
+        if (matches) {
+          initialKm = matches[1];
         }
       }
+      setQuickKmValue(initialKm);
+      setQuickPhotos([]);
+      setShowQuickKmInput(true);
     }
   };
 
   const handleSaveQuickJoined = async () => {
     try {
       setLoading(true);
+      const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
       await onUpdateEvent(event.id, {
         has_run: true,
-        distance_run: parseFloat(quickKmValue) || 0
+        distance_run: isRunRelated ? (parseFloat(quickKmValue) || 0) : 0,
+        joined_images: quickPhotos
       });
       setShowQuickKmInput(false);
+      setQuickPhotos([]);
     } catch (err) {
       setErrorMsg(err.message || 'Failed to save participation.');
     } finally {
@@ -603,6 +673,26 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                   onChange={(e) => setOrganization(e.target.value)}
                   className="text-input"
                   style={{ textAlign: 'center' }}
+                  disabled={loading}
+                />
+              </div>
+            )}
+
+            {/* Event specific: Description */}
+            {!event.is_task && (
+              <div className="input-group">
+                <label className="input-label">Event Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="text-input"
+                  style={{ 
+                    height: '80px', 
+                    resize: 'none', 
+                    padding: '12px',
+                    borderRadius: 'var(--radius-md)'
+                  }}
+                  placeholder="Enter event details..."
                   disabled={loading}
                 />
               </div>
@@ -956,40 +1046,103 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             )}
 
             {/* Event specific: Joined and Run */}
-            {!event.is_task && (
-              <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)', animation: 'fadeIn 0.2s ease-out' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span className="input-label" style={{ margin: 0, fontWeight: '700' }}>I joined & ran this event</span>
-                  <label className="toggle-switch-container">
-                    <input
-                      type="checkbox"
-                      checked={hasRun}
-                      onChange={(e) => {
-                        setHasRun(e.target.checked);
-                        if (!e.target.checked) setDistanceRun('');
-                      }}
-                    />
-                    <span className="toggle-slider" />
-                  </label>
-                </div>
-                {hasRun && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px', animation: 'fadeIn 0.2s ease-out' }}>
-                    <label className="input-label" style={{ textAlign: 'left', display: 'block' }}>How many Km did you run?</label>
-                    <input
-                      type="number"
-                      step="any"
-                      placeholder="Enter actual km run (e.g. 5, 10.2)"
-                      value={distanceRun}
-                      onChange={(e) => setDistanceRun(e.target.value)}
-                      className="text-input"
-                      style={{ textAlign: 'center' }}
-                      required
-                      disabled={loading}
-                    />
+            {/* Event specific: Joined and Run */}
+            {!event.is_task && (() => {
+              const isRunRelated = type === 'Run' || type === 'Sport' || !!distance;
+              return (
+                <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)', animation: 'fadeIn 0.2s ease-out' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span className="input-label" style={{ margin: 0, fontWeight: '700' }}>
+                      {isRunRelated ? 'I joined & ran this event' : 'I joined this event'}
+                    </span>
+                    <label className="toggle-switch-container">
+                      <input
+                        type="checkbox"
+                        checked={hasRun}
+                        onChange={(e) => {
+                          setHasRun(e.target.checked);
+                          if (!e.target.checked) {
+                            setDistanceRun('');
+                            setEditJoinedImages([]);
+                          }
+                        }}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
                   </div>
-                )}
-              </div>
-            )}
+                  {hasRun && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px', animation: 'fadeIn 0.2s ease-out' }}>
+                      {isRunRelated && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <label className="input-label" style={{ textAlign: 'left', display: 'block' }}>How many Km did you run?</label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="Enter actual km run (e.g. 5, 10.2)"
+                            value={distanceRun}
+                            onChange={(e) => setDistanceRun(e.target.value)}
+                            className="text-input"
+                            style={{ textAlign: 'center' }}
+                            required
+                            disabled={loading}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Photo management inside edit form */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label className="input-label" style={{ textAlign: 'left', display: 'block' }}>Event Photos (Max 3, Optional)</label>
+                        
+                        {editJoinedImages.length > 0 && (
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                            {editJoinedImages.map((photo, idx) => (
+                              <div key={idx} style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '6px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                                <img src={photo} alt={`Edit thumbnail ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <button
+                                  type="button"
+                                  onClick={() => setEditJoinedImages(prev => prev.filter((_, i) => i !== idx))}
+                                  style={{
+                                    position: 'absolute', top: '1px', right: '1px',
+                                    backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+                                    width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#fff', fontSize: '8px', cursor: 'pointer', padding: 0
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {editJoinedImages.length < 3 && (
+                          <label 
+                            className="btn-secondary" 
+                            style={{ 
+                              display: 'inline-flex', alignItems: 'center', gap: '8px', 
+                              padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)',
+                              color: 'var(--text-primary)', fontWeight: '600', fontSize: '12px', cursor: 'pointer',
+                              backgroundColor: 'var(--bg-primary)', justifyContent: 'center'
+                            }}
+                          >
+                            <Upload size={14} />
+                            <span>{uploadProgress ? 'Processing...' : 'Add Photos'}</span>
+                            <input 
+                              type="file" 
+                              multiple 
+                              accept="image/*" 
+                              onChange={handleEditPhotoUploadChange} 
+                              style={{ display: 'none' }}
+                              disabled={uploadProgress || loading}
+                            />
+                          </label>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Event specific: Cost Selector */}
             {!event.is_task && (
@@ -1062,25 +1215,25 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               </div>
             )}
 
-            {/* Description notes */}
-            <div className="input-group">
-              <label className="input-label">
-                {event.is_task ? 'Task Description (Notes)' : 'Event Description'}
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="text-input"
-                style={{ 
-                  height: '80px', 
-                  resize: 'none', 
-                  padding: '12px',
-                  borderRadius: 'var(--radius-md)'
-                }}
-                placeholder={event.is_task ? "Enter task details..." : "Enter event details..."}
-                disabled={loading}
-              />
-            </div>
+            {/* Task specific: Description notes */}
+            {event.is_task && (
+              <div className="input-group">
+                <label className="input-label">Task Description (Notes)</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="text-input"
+                  style={{ 
+                    height: '80px', 
+                    resize: 'none', 
+                    padding: '12px',
+                    borderRadius: 'var(--radius-md)'
+                  }}
+                  placeholder="Enter task details..."
+                  disabled={loading}
+                />
+              </div>
+            )}
 
             {/* Form actions */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
@@ -1169,16 +1322,42 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               {/* Joined & Ran Details (Event only) */}
               {!event.is_task && event.has_run && (() => {
                 const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
+                const images = event.joined_images || [];
                 return (
-                  <div className="detail-item">
-                    <span className="detail-label-icon"><Trophy size={20} style={{ color: 'var(--accent)' }} /></span>
-                    <div className="detail-content">
-                      <span className="detail-label">Participation Status</span>
-                      <span className="detail-val" style={{ color: 'var(--accent)', fontWeight: '800' }}>
-                        {isRunRelated ? `Joined & Ran (${event.distance_run} km)` : 'Joined'}
-                      </span>
+                  <>
+                    <div className="detail-item">
+                      <span className="detail-label-icon"><Trophy size={20} style={{ color: 'var(--accent)' }} /></span>
+                      <div className="detail-content">
+                        <span className="detail-label">Participation Status</span>
+                        <span className="detail-val" style={{ color: 'var(--accent)', fontWeight: '800' }}>
+                          {isRunRelated ? `Joined & Ran (${event.distance_run} km)` : 'Joined'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                    {images.length > 0 && (
+                      <div className="detail-item" style={{ marginTop: '2px', paddingLeft: '44px' }}>
+                        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                          {images.map((imgUrl, idx) => (
+                            <img 
+                              key={idx} 
+                              src={imgUrl} 
+                              alt={`Participation photo ${idx + 1}`} 
+                              style={{ 
+                                width: '70px', 
+                                height: '70px', 
+                                borderRadius: '8px', 
+                                objectFit: 'cover',
+                                border: '1px solid var(--border)',
+                                cursor: 'pointer',
+                                transition: 'transform 0.2s',
+                              }}
+                              onClick={() => setLightboxImg(imgUrl)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 );
               })()}
 
@@ -1611,66 +1790,172 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
           </div>
         )}
 
-        {/* Quick Km Input Modal Popup */}
-        {showQuickKmInput && (
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 9999,
-            backgroundColor: 'rgba(0,0,0,0.55)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '24px', backdropFilter: 'blur(4px)'
-          }}>
+        {/* Quick Check-In Popup */}
+        {showQuickKmInput && (() => {
+          const isRunRelated = event.type === 'Run' || event.type === 'Sport' || !!event.distance;
+          return (
             <div style={{
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-              width: '100%', maxWidth: '340px',
-              padding: '24px', border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-lg)',
-              animation: 'fadeIn 0.2s ease-out',
-              textAlign: 'center'
+              position: 'fixed', inset: 0, zIndex: 9999,
+              backgroundColor: 'rgba(0,0,0,0.55)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '24px', backdropFilter: 'blur(4px)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
-                <span style={{
-                  display: 'flex', padding: '14px', borderRadius: '50%',
-                  backgroundColor: 'var(--accent-glow)', color: 'var(--accent)'
-                }}>
-                  <Trophy size={32} />
-                </span>
-              </div>
-              <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>Log Your Run</h3>
-              <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', lineHeight: 1.4 }}>
-                Enter the distance in kilometers actually run for <strong>"{event.name}"</strong>:
-              </p>
-              
-              <input
-                type="number"
-                step="any"
-                value={quickKmValue}
-                onChange={(e) => setQuickKmValue(e.target.value)}
-                placeholder="Enter km (e.g. 5, 10.2)"
-                className="text-input"
-                style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}
-                autoFocus
-              />
-              
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  type="button" 
-                  className="btn-secondary" 
-                  style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
-                  onClick={() => setShowQuickKmInput(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="button" 
-                  className="btn-primary" 
-                  style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#ffffff', fontWeight: '700', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
-                  onClick={handleSaveQuickJoined}
-                >
-                  Save Run
-                </button>
+              <div style={{
+                backgroundColor: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-md)',
+                width: '100%', maxWidth: '340px',
+                padding: '24px', border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-lg)',
+                animation: 'fadeIn 0.2s ease-out',
+                textAlign: 'center'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                  <span style={{
+                    display: 'flex', padding: '14px', borderRadius: '50%',
+                    backgroundColor: 'var(--accent-glow)', color: 'var(--accent)'
+                  }}>
+                    <Trophy size={32} />
+                  </span>
+                </div>
+                
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '800', color: 'var(--text-primary)' }}>
+                  {isRunRelated ? 'Log Your Run' : 'Check In to Event'}
+                </h3>
+                
+                <p style={{ margin: '0 0 16px 0', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', lineHeight: 1.4 }}>
+                  {isRunRelated 
+                    ? `Enter distance in kilometers run for "${event.name}":` 
+                    : `Check in to participate in "${event.name}":`
+                  }
+                </p>
+                
+                {isRunRelated && (
+                  <input
+                    type="number"
+                    step="any"
+                    value={quickKmValue}
+                    onChange={(e) => setQuickKmValue(e.target.value)}
+                    placeholder="Enter km (e.g. 5, 10.2)"
+                    className="text-input"
+                    style={{ textAlign: 'center', marginBottom: '20px', width: '100%' }}
+                    autoFocus
+                  />
+                )}
+
+                {/* Picture Upload Block */}
+                <div style={{ marginTop: '16px', marginBottom: '20px', textAlign: 'left' }}>
+                  <label className="input-label" style={{ display: 'block', marginBottom: '6px', textAlign: 'center' }}>
+                    Upload Photos (Max 3, Optional)
+                  </label>
+                  
+                  {/* Thumbnails Row */}
+                  {quickPhotos.length > 0 && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '12px' }}>
+                      {quickPhotos.map((photo, idx) => (
+                        <div key={idx} style={{ position: 'relative', width: '60px', height: '60px', borderRadius: '8px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                          <img src={photo} alt={`Thumbnail ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button
+                            type="button"
+                            onClick={() => setQuickPhotos(prev => prev.filter((_, i) => i !== idx))}
+                            style={{
+                              position: 'absolute', top: '2px', right: '2px',
+                              backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%',
+                              width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: '#fff', fontSize: '9px', cursor: 'pointer', padding: 0
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {quickPhotos.length < 3 && (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <label 
+                        className="btn-secondary" 
+                        style={{ 
+                          display: 'inline-flex', alignItems: 'center', gap: '8px', 
+                          padding: '10px 16px', borderRadius: '12px', border: '1px solid var(--border)',
+                          color: 'var(--text-primary)', fontWeight: '600', fontSize: '13px', cursor: 'pointer',
+                          backgroundColor: 'var(--bg-primary)'
+                        }}
+                      >
+                        <Upload size={16} />
+                        <span>{uploadProgress ? 'Processing...' : 'Choose Photos'}</span>
+                        <input 
+                          type="file" 
+                          multiple 
+                          accept="image/*" 
+                          onChange={handlePhotoUploadChange} 
+                          style={{ display: 'none' }}
+                          disabled={uploadProgress || loading}
+                        />
+                      </label>
+                    </div>
+                  )}
+                </div>
+                
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    type="button" 
+                    className="btn-secondary" 
+                    style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', background: 'none', color: 'var(--text-primary)', fontWeight: '600', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    onClick={() => {
+                      setShowQuickKmInput(false);
+                      setQuickPhotos([]);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn-primary" 
+                    style={{ flex: 1, margin: 0, padding: '12px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#ffffff', fontWeight: '700', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}
+                    onClick={handleSaveQuickJoined}
+                    disabled={uploadProgress}
+                  >
+                    {isRunRelated ? 'Save Run' : 'Check In'}
+                  </button>
+                </div>
               </div>
             </div>
+          );
+        })()}
+
+        {/* Fullscreen Lightbox Overlay */}
+        {lightboxImg && (
+          <div 
+            style={{
+              position: 'fixed', inset: 0, zIndex: 10000,
+              backgroundColor: 'rgba(0,0,0,0.9)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '16px', animation: 'fadeIn 0.2s ease-out'
+            }}
+            onClick={() => setLightboxImg(null)}
+          >
+            <button 
+              type="button"
+              onClick={() => setLightboxImg(null)}
+              style={{
+                position: 'absolute', top: '24px', right: '24px',
+                backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
+                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', cursor: 'pointer'
+              }}
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={lightboxImg} 
+              alt="Fullscreen Zoomed view" 
+              style={{ 
+                maxWidth: '100%', maxHeight: '90vh', 
+                borderRadius: '8px', objectFit: 'contain',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+              }} 
+            />
           </div>
         )}
 

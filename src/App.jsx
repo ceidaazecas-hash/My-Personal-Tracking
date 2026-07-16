@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import GatekeeperLock from './components/GatekeeperLock';
-import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText } from 'lucide-react';
+import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText, X } from 'lucide-react';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -39,6 +39,7 @@ export default function App() {
 
   // Share view states
   const [isShareView, setIsShareView] = useState(false);
+  const [lightboxImg, setLightboxImg] = useState(null);
   const [sharedEvent, setSharedEvent] = useState(null);
   const [sharedEventLoading, setSharedEventLoading] = useState(false);
   const [sharedEventError, setSharedEventError] = useState('');
@@ -695,18 +696,44 @@ export default function App() {
                 {/* Participation */}
                 {sharedEvent.has_run && (() => {
                   const isRunRelated = sharedEvent.type === 'Run' || sharedEvent.type === 'Sport' || !!sharedEvent.distance;
+                  const images = sharedEvent.joined_images || [];
                   return (
-                    <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
-                      <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
-                        <Trophy size={20} />
-                      </span>
-                      <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
-                        <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Participation</span>
-                        <span className="detail-val" style={{ display: 'block', color: 'var(--accent)', fontWeight: '800', fontSize: '15px' }}>
-                          {isRunRelated ? `Completed & Ran (${sharedEvent.distance_run} km)` : 'Joined'}
+                    <>
+                      <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
+                        <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                          <Trophy size={20} />
                         </span>
+                        <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
+                          <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Participation</span>
+                          <span className="detail-val" style={{ display: 'block', color: 'var(--accent)', fontWeight: '800', fontSize: '15px' }}>
+                            {isRunRelated ? `Completed & Ran (${sharedEvent.distance_run} km)` : 'Joined'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                      {images.length > 0 && (
+                        <div className="detail-item" style={{ marginTop: '2px', paddingLeft: '52px' }}>
+                          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            {images.map((imgUrl, idx) => (
+                              <img 
+                                key={idx} 
+                                src={imgUrl} 
+                                alt={`Participation photo ${idx + 1}`} 
+                                style={{ 
+                                  width: '70px', 
+                                  height: '70px', 
+                                  borderRadius: '8px', 
+                                  objectFit: 'cover',
+                                  border: '1px solid var(--border)',
+                                  cursor: 'pointer',
+                                  transition: 'transform 0.2s',
+                                }}
+                                onClick={() => setLightboxImg(imgUrl)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
 
@@ -952,6 +979,40 @@ export default function App() {
         onUpdateEvent={handleUpdateEvent}
         onMoveTaskToToday={handleMoveTaskToToday}
       />
+      {/* Fullscreen Lightbox Overlay */}
+      {lightboxImg && (
+        <div 
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10000,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px', animation: 'fadeIn 0.2s ease-out'
+          }}
+          onClick={() => setLightboxImg(null)}
+        >
+          <button 
+            type="button"
+            onClick={() => setLightboxImg(null)}
+            style={{
+              position: 'absolute', top: '24px', right: '24px',
+              backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
+              width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff', cursor: 'pointer'
+            }}
+          >
+            <X size={24} />
+          </button>
+          <img 
+            src={lightboxImg} 
+            alt="Fullscreen view" 
+            style={{ 
+              maxWidth: '100%', maxHeight: '90vh', 
+              borderRadius: '8px', objectFit: 'contain',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+            }} 
+          />
+        </div>
+      )}
     </>
   );
 }
