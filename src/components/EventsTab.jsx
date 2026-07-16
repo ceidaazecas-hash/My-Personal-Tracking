@@ -9,20 +9,21 @@ const ShoesIcon = ({ size = 20, style }) => (
     height={size} 
     fill="none" 
     stroke="currentColor" 
-    strokeWidth="2" 
+    strokeWidth="2.2" 
     strokeLinecap="round" 
     strokeLinejoin="round" 
     style={style}
   >
-    {/* Sole */}
-    <path d="M3 18h18" />
-    <path d="M3 16h18a1 1 0 0 1 1 1v1H2v-1a1 1 0 0 1 1-1z" />
-    {/* Shoe body */}
-    <path d="M4 16v-4c0-1.1.9-2 2-2h3l3.5-4h4.5c1 0 2 1.5 2 3.5v6.5" />
+    {/* Slanted Sole */}
+    <path d="M7 11.5L18 20h3c.6 0 1-.4 1-1v-.5c0-.8-.5-1.5-1.2-1.8L19.5 16" />
+    {/* Sneaker upper boundary slanted */}
+    <path d="M8 10.5L11 6c.5-.7 1.5-.7 2 0l1 1.5h1.5c.8 0 1.5.5 1.7 1.2l2.3 6.8c.2.6.8.8 1.4.8" />
+    {/* Heel stripe block */}
+    <path d="M9.2 12c.8-.8.8-2 0-2.8L8 8" />
     {/* Laces */}
-    <path d="M14 8h2M13 10h3" />
-    {/* Dynamic side stripe design */}
-    <path d="M7 16c2-3 5-3 8 0" />
+    <path d="M14.8 10h1.5M14 12h1.5M13.2 14h1.5" />
+    {/* Speed lines */}
+    <path d="M3 7h4M2 12h4M4 17h4M5 21h13" />
   </svg>
 );
 
