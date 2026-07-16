@@ -2,6 +2,25 @@ import { useState } from 'react';
 import { Search, Calendar, MapPin, Inbox, Users, Clock, Trash2 } from 'lucide-react';
 import { Activity, Trophy, Briefcase, Gift, Sparkles } from 'lucide-react';
 
+const ShoesIcon = ({ size = 20, style }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    style={style}
+  >
+    <path d="M3 18h16.2c1 0 1.9-.7 2.1-1.7l1.5-7.3h-4.3l-2.5 3.5h-6l-2-4.5H2v6c0 2.2 1.8 4 4 4z" />
+    <path d="M11 8l1.5 2" />
+    <path d="M12.5 7l1.5 2" />
+    <path d="M7 14c3-3 8-3 10 0" />
+  </svg>
+);
+
 export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDraft, onDeleteDraft }) {
   // States for search and categories
   const [searchQuery, setSearchQuery] = useState('');
@@ -421,7 +440,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                       )}
                       {draft.distance && (
                         <span className="meta-item" style={{ marginTop: '2px' }}>
-                          <Activity size={12} />
+                          <ShoesIcon size={12} />
                           <span>{draft.distance}</span>
                         </span>
                       )}
@@ -514,7 +533,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                             </span>
                             {event.distance && (
                               <span className="meta-item" style={{ marginTop: '2px' }}>
-                                <Activity size={12} style={{ color: 'var(--accent)' }} />
+                                <ShoesIcon size={12} style={{ color: 'var(--accent)' }} />
                                 <span>{event.distance}</span>
                               </span>
                             )}
@@ -586,7 +605,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                             </span>
                             {event.distance && (
                               <span className="meta-item" style={{ marginTop: '2px' }}>
-                                <Activity size={12} />
+                                <ShoesIcon size={12} />
                                 <span>{event.distance}</span>
                               </span>
                             )}
@@ -662,7 +681,7 @@ export default function EventsTab({ events, onSelectEvent, drafts = [], onEditDr
                           </span>
                           {event.distance && (
                             <span className="meta-item" style={{ marginTop: '2px' }}>
-                              <Activity size={12} style={{ color: isPast ? 'var(--text-secondary)' : 'var(--accent)' }} />
+                              <ShoesIcon size={12} style={{ color: isPast ? 'var(--text-secondary)' : 'var(--accent)' }} />
                               <span>{event.distance}</span>
                             </span>
                           )}

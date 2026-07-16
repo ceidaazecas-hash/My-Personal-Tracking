@@ -2,6 +2,25 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Calendar, MapPin, DollarSign, Trash2, Tag, FileText, CheckCircle2, Edit2, Save, RotateCcw, Clock, Upload, Users, Plus, Share2 } from 'lucide-react';
 import { Activity, Trophy, Briefcase, Gift, Sparkles, Utensils, Dumbbell, HelpCircle } from 'lucide-react';
 
+const ShoesIcon = ({ size = 20, style }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    width={size} 
+    height={size} 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    style={style}
+  >
+    <path d="M3 18h16.2c1 0 1.9-.7 2.1-1.7l1.5-7.3h-4.3l-2.5 3.5h-6l-2-4.5H2v6c0 2.2 1.8 4 4 4z" />
+    <path d="M11 8l1.5 2" />
+    <path d="M12.5 7l1.5 2" />
+    <path d="M7 14c3-3 8-3 10 0" />
+  </svg>
+);
+
 export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent, onUpdateEvent, onMoveTaskToToday, onViewImage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1310,7 +1329,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               {/* Distance (Event only, if set) */}
               {!event.is_task && event.distance && (
                 <div className="detail-item">
-                  <span className="detail-label-icon"><Activity size={20} /></span>
+                  <span className="detail-label-icon"><ShoesIcon size={20} /></span>
                   <div className="detail-content">
                     <span className="detail-label">Distance</span>
                     <span className="detail-val">{event.distance}</span>
