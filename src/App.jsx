@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import GatekeeperLock from './components/GatekeeperLock';
-import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText, X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -72,6 +72,19 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [lightboxImages]);
+
+  const handleDownloadActiveImage = (e) => {
+    e.stopPropagation();
+    const activeImg = lightboxImages[lightboxIndex];
+    if (!activeImg) return;
+    
+    const link = document.createElement('a');
+    link.href = activeImg;
+    link.download = `event-photo-${lightboxIndex + 1}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // 1. Initial Gatekeeper Lock Check, Load Events & Fetch Site Password
   useEffect(() => {
@@ -1040,6 +1053,21 @@ export default function App() {
               setTouchEndX(0);
             }}
           >
+            {/* Download Button */}
+            <button 
+              type="button"
+              onClick={handleDownloadActiveImage}
+              style={{
+                position: 'absolute', top: '24px', right: '80px',
+                backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
+                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', cursor: 'pointer', zIndex: 10002
+              }}
+              title="Download Photo"
+            >
+              <Download size={20} />
+            </button>
+
             <button 
               type="button"
               onClick={() => setLightboxImages([])}
