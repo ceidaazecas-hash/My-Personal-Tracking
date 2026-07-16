@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Calendar, MapPin, DollarSign, Trash2, Tag, FileText, CheckCircle2, Edit2, Save, RotateCcw, Clock, Upload, Users, Plus, Share2 } from 'lucide-react';
 import { Activity, Trophy, Briefcase, Gift, Sparkles, Utensils, Dumbbell, HelpCircle } from 'lucide-react';
 
-export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent, onUpdateEvent, onMoveTaskToToday }) {
+export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent, onUpdateEvent, onMoveTaskToToday, onViewImage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -25,7 +25,6 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
   const [quickKmValue, setQuickKmValue] = useState('');
   const [quickPhotos, setQuickPhotos] = useState([]);
   const [uploadProgress, setUploadProgress] = useState(false);
-  const [lightboxImg, setLightboxImg] = useState(null);
   const [editJoinedImages, setEditJoinedImages] = useState([]);
 
   // Custom Date/Time States for Edit Mode
@@ -1351,7 +1350,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s',
                               }}
-                              onClick={() => setLightboxImg(imgUrl)}
+                              onClick={() => onViewImage(imgUrl)}
                             />
                           ))}
                         </div>
@@ -1923,41 +1922,6 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             </div>
           );
         })()}
-
-        {/* Fullscreen Lightbox Overlay */}
-        {lightboxImg && (
-          <div 
-            style={{
-              position: 'fixed', inset: 0, zIndex: 10000,
-              backgroundColor: 'rgba(0,0,0,0.9)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '16px', animation: 'fadeIn 0.2s ease-out'
-            }}
-            onClick={() => setLightboxImg(null)}
-          >
-            <button 
-              type="button"
-              onClick={() => setLightboxImg(null)}
-              style={{
-                position: 'absolute', top: '24px', right: '24px',
-                backgroundColor: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
-                width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', cursor: 'pointer'
-              }}
-            >
-              <X size={24} />
-            </button>
-            <img 
-              src={lightboxImg} 
-              alt="Fullscreen Zoomed view" 
-              style={{ 
-                maxWidth: '100%', maxHeight: '90vh', 
-                borderRadius: '8px', objectFit: 'contain',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-              }} 
-            />
-          </div>
-        )}
 
       </div>
     </div>

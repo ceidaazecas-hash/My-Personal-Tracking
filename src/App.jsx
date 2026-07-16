@@ -978,6 +978,7 @@ export default function App() {
         onDeleteEvent={handleDeleteEvent}
         onUpdateEvent={handleUpdateEvent}
         onMoveTaskToToday={handleMoveTaskToToday}
+        onViewImage={setLightboxImg}
       />
       {/* Fullscreen Lightbox Overlay */}
       {lightboxImg && (
