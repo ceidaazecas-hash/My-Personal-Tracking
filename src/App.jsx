@@ -20,10 +20,15 @@ const ShoesIcon = ({ size = 20, style }) => (
     strokeLinejoin="round" 
     style={style}
   >
-    <path d="M3 18h16.2c1 0 1.9-.7 2.1-1.7l1.5-7.3h-4.3l-2.5 3.5h-6l-2-4.5H2v6c0 2.2 1.8 4 4 4z" />
-    <path d="M11 8l1.5 2" />
-    <path d="M12.5 7l1.5 2" />
-    <path d="M7 14c3-3 8-3 10 0" />
+    {/* Sole */}
+    <path d="M3 18h18" />
+    <path d="M3 16h18a1 1 0 0 1 1 1v1H2v-1a1 1 0 0 1 1-1z" />
+    {/* Shoe body */}
+    <path d="M4 16v-4c0-1.1.9-2 2-2h3l3.5-4h4.5c1 0 2 1.5 2 3.5v6.5" />
+    {/* Laces */}
+    <path d="M14 8h2M13 10h3" />
+    {/* Dynamic side stripe design */}
+    <path d="M7 16c2-3 5-3 8 0" />
   </svg>
 );
 
