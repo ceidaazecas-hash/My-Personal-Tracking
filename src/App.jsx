@@ -630,6 +630,19 @@ export default function App() {
                   </div>
                 )}
 
+                {/* Description */}
+                {sharedEvent.description && (
+                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', marginTop: '16px' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)', marginTop: '2px' }}>
+                      <FileText size={20} />
+                    </span>
+                    <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
+                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Event Description</span>
+                      <span className="detail-val" style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 'normal', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{sharedEvent.description}</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Date range display */}
                 <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                   <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
@@ -778,19 +791,6 @@ export default function App() {
                     </span>
                   </div>
                 </div>
-
-                {/* Description */}
-                {sharedEvent.description && (
-                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
-                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
-                      <FileText size={20} />
-                    </span>
-                    <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
-                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Event Description</span>
-                      <span className="detail-val" style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 'normal', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{sharedEvent.description}</span>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Invitation footer */}
