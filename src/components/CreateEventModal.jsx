@@ -258,7 +258,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       is_paid: mode === 'event' ? isPaid : false,
       price: mode === 'event' ? price : '',
       payment_type: mode === 'event' ? paymentType : 'once',
-      description: mode === 'task' ? description.trim() : '',
+      description: description.trim(),
       is_draft: true
     };
 
@@ -436,8 +436,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
           ? (currency === 'KHR' ? rawPrice / 4000 : rawPrice) 
           : 0.00;
         itemData.payment_type = isPaid ? paymentType : 'once';
-        itemData.is_completed = false;
-        itemData.description = '';
+        itemData.description = description.trim();
       } else {
         itemData.type = taskType === 'Other' ? (customTaskType.trim() || 'Task') : taskType;
         itemData.location = '';
@@ -1106,26 +1105,26 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
               </div>
             )}
 
-            {/* Task-specific: Description (Notes) */}
-            {mode === 'task' && (
-              <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-                <label className="input-label" htmlFor="task-description">Task Description (Notes)</label>
-                <textarea
-                  id="task-description"
-                  placeholder="Enter details about this task..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="text-input"
-                  style={{ 
-                    height: '80px', 
-                    resize: 'none', 
-                    padding: '12px',
-                    borderRadius: 'var(--radius-md)'
-                  }}
-                  disabled={loading}
-                />
-              </div>
-            )}
+            {/* Description (Notes) */}
+            <div className="input-group">
+              <label className="input-label" htmlFor="item-description">
+                {mode === 'task' ? 'Task Description (Notes)' : 'Event Description'}
+              </label>
+              <textarea
+                id="item-description"
+                placeholder={mode === 'task' ? 'Enter details about this task...' : 'Enter details about this event...'}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-input"
+                style={{ 
+                  height: '80px', 
+                  resize: 'none', 
+                  padding: '12px',
+                  borderRadius: 'var(--radius-md)'
+                }}
+                disabled={loading}
+              />
+            </div>
 
             <div className="form-actions">
               <button type="button" className="btn-secondary" onClick={handleCloseRequest} disabled={loading}>

@@ -1062,25 +1062,25 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
               </div>
             )}
 
-            {/* Task specific: Description notes */}
-            {event.is_task && (
-              <div className="input-group">
-                <label className="input-label">Task Description (Notes)</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="text-input"
-                  style={{ 
-                    height: '80px', 
-                    resize: 'none', 
-                    padding: '12px',
-                    borderRadius: 'var(--radius-md)'
-                  }}
-                  placeholder="Enter task details..."
-                  disabled={loading}
-                />
-              </div>
-            )}
+            {/* Description notes */}
+            <div className="input-group">
+              <label className="input-label">
+                {event.is_task ? 'Task Description (Notes)' : 'Event Description'}
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="text-input"
+                style={{ 
+                  height: '80px', 
+                  resize: 'none', 
+                  padding: '12px',
+                  borderRadius: 'var(--radius-md)'
+                }}
+                placeholder={event.is_task ? "Enter task details..." : "Enter event details..."}
+                disabled={loading}
+              />
+            </div>
 
             {/* Form actions */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
@@ -1199,12 +1199,12 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
                 </div>
               )}
 
-              {/* Description Notes (Task only) */}
-              {event.is_task && event.description && (
+              {/* Description Notes */}
+              {event.description && (
                 <div className="detail-item">
                   <span className="detail-label-icon"><FileText size={20} /></span>
                   <div className="detail-content">
-                    <span className="detail-label">Task Description</span>
+                    <span className="detail-label">{event.is_task ? 'Task Description' : 'Event Description'}</span>
                     <span className="detail-val" style={{ fontWeight: 'normal', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
                       {event.description}
                     </span>

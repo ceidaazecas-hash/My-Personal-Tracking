@@ -6,7 +6,7 @@ import SettingsTab from './components/SettingsTab';
 import CreateEventModal from './components/CreateEventModal';
 import EventDetailModal from './components/EventDetailModal';
 import GatekeeperLock from './components/GatekeeperLock';
-import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert } from 'lucide-react';
+import { Sun, Moon, Calendar, Clock, Plus, Settings, Lock, RefreshCw, Tag, Users, MapPin, DollarSign, Activity, Trophy, Briefcase, Gift, Sparkles, ShieldAlert, FileText } from 'lucide-react';
 
 export default function App() {
   const [loading, setLoading] = useState(true);
@@ -722,6 +722,19 @@ export default function App() {
                     </span>
                   </div>
                 </div>
+
+                {/* Description */}
+                {sharedEvent.description && (
+                  <div className="detail-item" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginTop: '16px' }}>
+                    <span className="detail-label-icon" style={{ display: 'flex', padding: '10px', borderRadius: '12px', backgroundColor: 'var(--bg-primary)', color: 'var(--accent)' }}>
+                      <FileText size={20} />
+                    </span>
+                    <div className="detail-content" style={{ flex: 1, minWidth: 0 }}>
+                      <span className="detail-label" style={{ display: 'block', fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-secondary)', letterSpacing: '1px', fontWeight: '700', marginBottom: '2px' }}>Event Description</span>
+                      <span className="detail-val" style={{ display: 'block', color: 'var(--text-primary)', fontWeight: 'normal', fontSize: '14px', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{sharedEvent.description}</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Invitation footer */}
