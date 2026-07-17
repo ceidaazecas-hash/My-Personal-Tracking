@@ -167,7 +167,6 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                   className={`event-card ${task.is_completed ? 'completed' : ''}`}
                   style={{ 
                     padding: '14px 18px', 
-                    borderLeft: task.is_completed ? '4px solid var(--border)' : '4px solid var(--accent)',
                     opacity: task.is_completed ? 0.6 : 1,
                     transition: 'all 0.2s ease'
                   }}
@@ -263,7 +262,6 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                   className="event-card"
                   style={{ 
                     padding: '14px 18px', 
-                    borderLeft: '4px solid var(--accent)',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -344,7 +342,6 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                   className="event-card completed"
                   style={{ 
                     padding: '14px 18px', 
-                    borderLeft: '4px solid var(--border)',
                     opacity: 0.6,
                     transition: 'all 0.2s ease'
                   }}
@@ -425,7 +422,6 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                   className="event-card"
                   style={{ 
                     padding: '14px 18px', 
-                    borderLeft: '4px solid #f59e0b',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -532,7 +528,6 @@ export default function DailyTab({ events, onSelectEvent, onToggleTaskCompletion
                   className="event-card"
                   style={{ 
                     padding: '14px 18px', 
-                    borderLeft: '4px dashed var(--text-secondary)',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
                   }}
