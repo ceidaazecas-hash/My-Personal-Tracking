@@ -321,7 +321,8 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       return;
     }
 
-    if (!event.is_task && !location.trim()) {
+    const isSportRelated = type === 'Run' || type === 'Sport';
+    if (!event.is_task && isSportRelated && !location.trim()) {
       setErrorMsg('Location is required.');
       setLoading(false);
       return;
@@ -383,12 +384,13 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
       };
 
       if (!event.is_task) {
+        const isSportRelated = type === 'Run' || type === 'Sport';
         updatedData.type = type === 'Other' ? (customType.trim() || 'Other') : type;
-        updatedData.location = location.trim();
-        updatedData.distance = distance ? `${distance.trim()} KM` : '';
-        updatedData.has_run = hasRun;
-        updatedData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
-        updatedData.organization = organization.trim();
+        updatedData.location = isSportRelated ? location.trim() : '';
+        updatedData.distance = (isSportRelated && distance) ? `${distance.trim()} KM` : '';
+        updatedData.has_run = isSportRelated ? hasRun : false;
+        updatedData.distance_run = (isSportRelated && hasRun) ? parseFloat(distanceRun) || 0 : 0;
+        updatedData.organization = isSportRelated ? organization.trim() : '';
         updatedData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
         updatedData.price = isPaid 
@@ -697,7 +699,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             </div>
 
             {/* Event specific: Organization */}
-            {!event.is_task && (
+            {!event.is_task && (type === 'Run' || type === 'Sport') && (
               <div className="input-group">
                 <label className="input-label">Organization</label>
                 <input
@@ -1048,7 +1050,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             )}
 
             {/* Event specific: Location */}
-            {!event.is_task && (
+            {!event.is_task && (type === 'Run' || type === 'Sport') && (
               <div className="input-group">
                 <label className="input-label">Location / Maps Link</label>
                 <input
@@ -1064,7 +1066,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
             )}
 
             {/* Event specific: Distance (KM) */}
-            {!event.is_task && (
+            {!event.is_task && (type === 'Run' || type === 'Sport') && (
               <div className="input-group">
                 <label className="input-label">Distance (KM)</label>
                 <input

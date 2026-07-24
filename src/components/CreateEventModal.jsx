@@ -248,6 +248,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     }
 
     const draftId = draftToEdit ? draftToEdit.id : 'draft_' + Date.now();
+    const isSportRelated = mode === 'event' && (type === 'Run' || type === 'Sport');
     const draftItem = {
       id: draftId,
       is_task: mode === 'task',
@@ -255,11 +256,11 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       date: localDate.toISOString(),
       end_date: endIso,
       type: mode === 'event' ? (type === 'Other' ? customEventType : type) : (taskType === 'Other' ? customTaskType : taskType),
-      location: mode === 'event' ? location.trim() : '',
-      distance: mode === 'event' && distance ? `${distance.trim()} KM` : '',
-      has_run: mode === 'event' ? hasRun : false,
-      distance_run: mode === 'event' ? distanceRun : '',
-      organization: mode === 'event' ? organization.trim() : '',
+      location: isSportRelated ? location.trim() : '',
+      distance: isSportRelated && distance ? `${distance.trim()} KM` : '',
+      has_run: isSportRelated ? hasRun : false,
+      distance_run: isSportRelated ? distanceRun : '',
+      organization: isSportRelated ? organization.trim() : '',
       is_paid: mode === 'event' ? isPaid : false,
       price: mode === 'event' ? price : '',
       payment_type: mode === 'event' ? paymentType : 'once',
@@ -433,12 +434,13 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
       };
 
       if (mode === 'event') {
+        const isSportRelated = type === 'Run' || type === 'Sport';
         itemData.type = type === 'Other' ? (customEventType.trim() || 'Other') : type;
-        itemData.location = location.trim();
-        itemData.distance = distance ? `${distance.trim()} KM` : '';
-        itemData.has_run = hasRun;
-        itemData.distance_run = hasRun ? parseFloat(distanceRun) || 0 : 0;
-        itemData.organization = organization.trim();
+        itemData.location = isSportRelated ? location.trim() : '';
+        itemData.distance = (isSportRelated && distance) ? `${distance.trim()} KM` : '';
+        itemData.has_run = isSportRelated ? hasRun : false;
+        itemData.distance_run = (isSportRelated && hasRun) ? parseFloat(distanceRun) || 0 : 0;
+        itemData.organization = isSportRelated ? organization.trim() : '';
         itemData.is_paid = isPaid;
         const rawPrice = parseFloat(price);
         itemData.price = isPaid 
@@ -578,7 +580,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             </div>
 
             {/* Event-specific: Organization Name */}
-            {mode === 'event' && (
+            {mode === 'event' && (type === 'Run' || type === 'Sport') && (
               <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                 <label className="input-label" htmlFor="event-organization">
                   Organization
@@ -951,7 +953,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             )}
 
             {/* Event-specific: Location Link */}
-            {mode === 'event' && (
+            {mode === 'event' && (type === 'Run' || type === 'Sport') && (
               <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                 <label className="input-label" htmlFor="event-location">Location / Google Maps Link</label>
                 <input
@@ -969,7 +971,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             )}
 
             {/* Event-specific: Distance (KM) */}
-            {mode === 'event' && (
+            {mode === 'event' && (type === 'Run' || type === 'Sport') && (
               <div className="input-group" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                 <label className="input-label" htmlFor="event-distance">Distance (KM)</label>
                 <input
@@ -988,7 +990,7 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
             )}
 
             {/* Event-specific: Joined and Run */}
-            {mode === 'event' && (
+            {mode === 'event' && (type === 'Run' || type === 'Sport') && (
               <div className="input-group" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)', backgroundColor: 'var(--bg-secondary)', animation: 'fadeIn 0.2s ease-out' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span className="input-label" style={{ margin: 0, fontWeight: '700' }}>I joined & ran this event</span>
