@@ -548,6 +548,10 @@ export default function EventDetailModal({ event, isOpen, onClose, onDeleteEvent
 
     const onTouchMove = (e) => {
       if (!dragState.current.dragging) return;
+      if (sheet.scrollTop > 0) {
+        dragState.current.startY = e.touches[0].clientY;
+        return;
+      }
       const deltaY = e.touches[0].clientY - dragState.current.startY;
       if (deltaY > 0) {
         e.preventDefault(); // Stop page from scrolling during swipe-down

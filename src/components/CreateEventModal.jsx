@@ -298,9 +298,13 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
 
     const onTouchMove = (e) => {
       if (!dragState.current.dragging) return;
+      if (sheet.scrollTop > 0) {
+        dragState.current.startY = e.touches[0].clientY;
+        return;
+      }
       const deltaY = e.touches[0].clientY - dragState.current.startY;
       if (deltaY > 0) {
-        // Only prevent page scroll when dragging downward on the sheet
+        // Only prevent page scroll when dragging downward on the sheet at the top
         e.preventDefault();
         dragState.current.currentDragY = deltaY;
         setDragY(deltaY);
