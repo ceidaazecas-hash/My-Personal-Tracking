@@ -369,7 +369,8 @@ export default function CreateEventModal({ isOpen, onClose, onCreateEvent, force
     }
 
     if (mode === 'event') {
-      if (!location.trim()) {
+      const isSportRelated = type === 'Run' || type === 'Sport';
+      if (isSportRelated && !location.trim()) {
         setErrorMsg('Location (or Google Maps link) is required.');
         return;
       }
