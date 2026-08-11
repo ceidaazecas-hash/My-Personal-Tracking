@@ -33,6 +33,14 @@ const ShoesIcon = ({ size = 20, style }) => (
   </svg>
 );
 
+const getReadableErrorMessage = (error, defaultAction) => {
+  const msg = error?.message || String(error);
+  if (msg.includes('fetch') || error?.name === 'TypeError' || msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
+    return 'Could not connect to database (Failed to fetch). If your Supabase project was paused due to inactivity, please log in to https://supabase.com/dashboard to restore/unpause your project.';
+  }
+  return `Error ${defaultAction}: ${msg}`;
+};
+
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
@@ -391,7 +399,7 @@ export default function App() {
         }
       }
     } catch (error) {
-      alert('Error creating item: ' + error.message);
+      alert(getReadableErrorMessage(error, 'creating item'));
       throw error;
     }
   };
@@ -410,7 +418,7 @@ export default function App() {
         setEvents(prev => prev.map(e => e.id === taskId ? data[0] : e));
       }
     } catch (error) {
-      alert('Error updating task status: ' + error.message);
+      alert(getReadableErrorMessage(error, 'updating task status'));
     }
   };
 
@@ -426,7 +434,7 @@ export default function App() {
       setEvents(prev => prev.filter(e => e.id !== eventId));
       setSelectedEvent(null);
     } catch (error) {
-      alert('Error deleting item: ' + error.message);
+      alert(getReadableErrorMessage(error, 'deleting item'));
     }
   };
 
@@ -463,7 +471,7 @@ export default function App() {
         setSelectedEvent(data[0]); // Update details modal state too!
       }
     } catch (error) {
-      alert('Error updating item: ' + error.message);
+      alert(getReadableErrorMessage(error, 'updating item'));
       throw error;
     }
   };
@@ -494,7 +502,7 @@ export default function App() {
         }
       }
     } catch (error) {
-      alert('Failed to reschedule task: ' + error.message);
+      alert(getReadableErrorMessage(error, 'rescheduling task'));
     }
   };
 
